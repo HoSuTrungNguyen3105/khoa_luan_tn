@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import express from 'express'
 import bodyparser from 'body-parser'
 import mongoose from 'mongoose'
@@ -31,4 +29,3 @@ app.use('/user', UserRoute)
 app.use('/post', PostRoute)
 app.use('/chat', ChatRoute)
 app.use('/message', MessageRoute)
->>>>>>> Stashed changes
