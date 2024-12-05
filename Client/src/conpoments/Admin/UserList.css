@@ -1,0 +1,111 @@
+/* Tổng thể */
+.user-list-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+textarea,
+input {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+/* Các kiểu button */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Kiểu cho button Block */
+.btn-block {
+  background-color: green;
+  color: white;
+}
+
+/* Kiểu cho button Unblock */
+.btn-unblock {
+  background-color: grey;
+  color: white;
+}
+/* Tiêu đề */
+.header {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Danh sách người dùng */
+.user-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Card thông tin người dùng */
+.user-card {
+  padding: 20px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+/* Màu nền đỏ khi user bị block */
+.user-card.blocked {
+  background-color: red !important;
+  color: white;
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Thông tin người dùng */
+.user-name,
+.user-email,
+.user-followers {
+  margin: 10px 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.user-name strong,
+.user-email strong,
+.user-followers strong {
+  color: #000;
+}
+
+/* Loading và Error */
+.loading,
+.error-message {
+  text-align: center;
+  font-size: 18px;
+  margin: 20px;
+}
+
+.loading {
+  color: #007bff;
+}
+
+.error-message {
+  color: #dc3545;
+}
+
+.empty-message {
+  text-align: center;
+  color: #777;
+  font-style: italic;
+}

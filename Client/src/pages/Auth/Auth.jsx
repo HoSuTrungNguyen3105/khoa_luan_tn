@@ -1,105 +1,101 @@
-import React from "react";
-import "./Auth.css";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Logo from "../../img/logo.png";
+import "./Auth.css";
+import { useAuthStore } from "../../store/useAuthStore";
 
-const Auth = () => {
+const Auth = ({ isAdminLogin }) => {
   return (
     <div className="Auth">
       <div className="a-left">
-        <img src={Logo} alt="" />
+        <img src={Logo} alt="Logo" />
         <div className="Webname">
-          <h1>TL SOSICAL </h1>
+          <h1>TL SOSICAL</h1>
           <h6>Mạng xã hội tìm đồ bị thất lạc toàn quốc</h6>
         </div>
       </div>
-
-      <LogIn/>
+      <Login isAdminLogin={isAdminLogin} />
     </div>
   );
 };
-function LogIn() {
-    return (
-      <div className="a-right">
-        <form className="infoForm authForm">
-          <h3>Đăng Nhập</h3>
-  
-          <div>
-            <input
-              type="text"
-              placeholder="Username"
-              className="infoInput"
-              name="username"
-            />
-          </div>
-  
-          <div>
-            <input
-              type="password"
-              className="infoInput"
-              placeholder="Password"
-              name="password"
-            />
-          </div>
-  
-          <div>
-              <span style={{ fontSize: "12px" }}>
-                Không có tài khoản? Đăng ký!
-              </span>
-            <button className="button infoButton">Đăng Nhập</button>
-          </div>
-        </form>
-      </div>
-    );
-  }
-function SignUp() {
+
+function Login({ isAdminLogin }) {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const { login, isLoggingIn, user, fetchDataByRole } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    await login(formData); // Gọi login để đăng nhập
+
+    if (user) {
+      const expectedRole = isAdminLogin ? "admin" : "user"; // Xác định role mong muốn
+
+      if (user.role === expectedRole) {
+        // Vai trò khớp
+        await fetchDataByRole(user.role); // Lấy dữ liệu theo role
+      } else {
+        // Vai trò không khớp
+        alert(
+          `Bạn không có quyền truy cập vào trang ${
+            isAdminLogin ? "Admin" : "User"
+          }!`
+        );
+      }
+    }
+  };
+
   return (
     <div className="a-right">
-      <form className="infoForm authForm">
-        <h3>Đăng Ký</h3>
-
+      <form className="infoForm authForm" onSubmit={handleSubmit}>
+        <h3>{isAdminLogin ? "Đăng Nhập Admin" : "Đăng Nhập Người Dùng"}</h3>
         <div>
           <input
-            type="text"
-            placeholder="First Name"
+            placeholder="you@example.com"
             className="infoInput"
-            name="firstname"
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            className="infoInput"
-            name="lastname"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
           />
         </div>
-
         <div>
           <input
-            type="text"
-            className="infoInput"
-            name="username"
-            placeholder="Usernames"
-          />
-        </div>
-
-        <div>
-          <input
-            type="text"
             className="infoInput"
             name="password"
-            placeholder="Password"
-          />
-          <input
-            type="text"
-            className="infoInput"
-            name="confirmpass"
-            placeholder="Confirm Password"
+            type="password"
+            placeholder="••••••••"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
           />
         </div>
-
         <div>
-            <span style={{fontSize: '12px'}}>Đã có tài khoản? Đăng nhập!</span>
+          <span style={{ fontSize: "12px" }}>
+            <Link to="/sign-up">Không có tài khoản? Đăng ký!</Link>
+          </span>
+          <button
+            type="submit"
+            className="button infoButton"
+            disabled={isLoggingIn}
+          >
+            {isLoggingIn ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              "Đăng nhập"
+            )}
+          </button>
         </div>
-        <button className="button infoButton" type="submit">Đăng Ký</button>
       </form>
     </div>
   );

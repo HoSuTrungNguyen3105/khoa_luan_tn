@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import "./InfoCard.css";
 import { UilPen } from "@iconscout/react-unicons";
 import ProfileModal from "../ProfileModal/ProfileModal";
-
+import { useAuthStore } from "../../store/useAuthStore";
+import { LogOut } from "lucide-react";
 
 const InfoCard = () => {
   const [modalOpened, setModalOpened] = useState(false);
+  const { authUser } = useAuthStore((state) => state);
+  const { logout } = useAuthStore();
+
   return (
     <div className="InfoCard">
       <div className="infoHead">
@@ -19,24 +23,32 @@ const InfoCard = () => {
           <ProfileModal
             modalOpened={modalOpened}
             setModalOpened={setModalOpened}
+            userData={authUser} // Truyền authUser mới nhất vào
           />
         </div>
       </div>
       <div className="info">
         <span>
-          <b>Địa chỉ: </b>
+          <b>Email: </b>
         </span>
-        <span>Ngõ 34 Hòa Hải, Đà Nẵng</span>
+        <span>{authUser?.email || "Chưa cập nhật"}</span>
       </div>
 
       <div className="info">
         <span>
-          <b>Nơi làm việc: </b>
+          <b>Tên user: </b>
         </span>
-        <span>Facebook</span>
+        <span>{authUser?.firstname || "Chưa cập nhật"}</span>
       </div>
 
-      <button className="button logout-button">Đăng Xuất</button>
+      {authUser && (
+        <>
+          <button className="button logout-button" onClick={logout}>
+            <LogOut className="size-5" />
+            <span className="hidden sm:inline">Đăng xuất</span>
+          </button>
+        </>
+      )}
     </div>
   );
 };

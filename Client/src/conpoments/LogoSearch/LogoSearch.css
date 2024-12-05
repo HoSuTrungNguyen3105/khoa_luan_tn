@@ -1,31 +1,42 @@
-.LogoSearch{
-    display: flex;
-    gap: 0.75rem;
+.LogoSearch {
+  display: flex;
+  gap: 0.75rem;
 }
 .LogoSearch > img {
-    width: 4rem;
-    height: 4rem;
+  width: 4rem;
+  height: 4rem;
+  margin-right: 8px; /* Khoảng cách giữa logo và input */
 }
-.Search{
-    display:  flex;
-    background-color: var(--inputColor);
-    border-radius: 10px;
-    padding: 5px;
+.Search {
+  display: flex;
+  background-color: var(--inputColor);
+  border-radius: 10px;
 }
-.Search>input{
-    background-color: transparent;
-    border: none;
-    outline: none;
+.search-input {
+  padding-left: 8px; /* Khoảng cách từ bên trái của input */
+  padding-right: 8px;
 }
-.S-icon{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: orange;
-    border-radius: 5px;
-    padding: 4px;
-    color: white;
+.Search > input {
+  background-color: transparent;
+  border: none;
+  outline: none;
 }
-.S-icon:hover{
-    cursor: pointer;
+.S-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: orange;
+  border-radius: 5px;
+  padding: 4px;
+  color: white;
+}
+.S-icon:hover {
+  cursor: pointer;
+}
+.SearchPage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18rem auto 20rem;
+  gap: 1rem;
+  height: 100vh;
 }
