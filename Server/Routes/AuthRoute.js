@@ -12,12 +12,14 @@ import {
   dataRoute,
   checkUserStatus,
   resetPasswordFromForget,
+  verifyEmail,
 } from "../Controllers/AuthController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
 import authenticateToken from "../lib/auth.js";
 import { checkAuth } from "../lib/checkAuth.js";
 const router = express.Router();
 router.get("/data/role", dataRoute);
+router.post("/verify-email", verifyEmail);
 router.get("/check-status", protectRoute, checkUserStatus);
 router.post("/register", registerUser);
 router.post("/login", loginUser);

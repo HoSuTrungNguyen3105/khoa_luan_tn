@@ -2,7 +2,7 @@ import React from "react";
 import { Link, Outlet } from "react-router-dom";
 import "./AdminSidebar.css";
 import { FaUsers, FaNewspaper, FaCogs } from "react-icons/fa";
-import { MessageCircleCode, MessageCircleMore } from "lucide-react";
+import { MessageCircleCode, MessageCircleMore, Settings } from "lucide-react";
 import { MdPostAdd, MdReportProblem } from "react-icons/md";
 
 const AdminSidebar = () => {
@@ -41,6 +41,11 @@ const AdminSidebar = () => {
       to: "/admin-dashboard/admin-all-chat",
       icon: <MessageCircleMore />,
       label: "Quản lý tin nhắn",
+    },
+    {
+      to: "/admin-dashboard/admin-setting",
+      icon: <Settings />,
+      label: "Cài đặt",
     },
   ];
 

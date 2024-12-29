@@ -1,3 +1,4 @@
+import Notification from "../Models/notificationModel.js";
 import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
 import bcrypt from "bcrypt";
@@ -79,16 +80,18 @@ export const deleteUser = async (req, res) => {
 };
 
 export const followUser = async (req, res) => {
-  const userId = req.params.id; // Lấy userId từ URL
-  const { _id } = req.body; // Lấy ID người theo dõi từ body
+  const userId = req.params.id; // Lấy userId từ URL (người dùng được follow)
+  const { _id } = req.body; // Lấy ID người theo dõi từ body (người follow)
 
   if (!userId || !_id) {
     return res.status(400).json({ message: "Missing user IDs" });
   }
 
   try {
-    const followUser = await UserModel.findOne({ _id: userId }); // Tìm user bằng userId
-    const followingUser = await UserModel.findOne({ _id }); // Tìm user bằng _id (ID người theo dõi)
+    // Tìm người dùng được follow
+    const followUser = await UserModel.findById(userId);
+    // Tìm người dùng đang follow
+    const followingUser = await UserModel.findById(_id);
 
     if (!followUser) {
       return res
@@ -97,22 +100,53 @@ export const followUser = async (req, res) => {
     }
 
     if (!followingUser) {
-      return res.status(404).json({ message: "Current user not found" });
+      return res.status(404).json({ message: "Người theo dõi không tìm thấy" });
     }
 
     if (!followUser.followers.includes(_id)) {
       // Cập nhật danh sách followers và following
       await followUser.updateOne({ $push: { followers: _id } });
       await followingUser.updateOne({ $push: { following: userId } });
-      res.status(200).json("Theo dõi thành công!");
+
+      // Tạo thông báo cho người được follow
+      const notification = new Notification({
+        userId: userId, // Người nhận thông báo
+        senderId: _id, // Người gửi thông báo (người follow)
+        message: `${followingUser.username} đã follow bạn`, // Nội dung thông báo
+        type: "follow",
+      });
+      await notification.save();
+
+      return res.status(200).json({
+        message: "Follow successful and notification created",
+        data: notification,
+      });
     } else {
-      res.status(403).json("Bạn đã theo dõi người này");
+      // Nếu người dùng đã theo dõi
+      return res.status(403).json({ message: "Bạn đã theo dõi người này rồi" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
+export const getNotifications = async (req, res) => {
+  try {
+    const { userId } = req.params; // userId là ID của người dùng muốn lấy thông báo
 
+    // Lấy tất cả thông báo cho người dùng
+    const notifications = await Notification.find({ userId })
+      .sort({ createdAt: -1 }) // Sắp xếp thông báo mới nhất lên đầu
+      .limit(10); // Giới hạn 10 thông báo gần nhất
+
+    return res.status(200).json({
+      message: "Notifications fetched successfully",
+      data: notifications,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error in fetching notifications" });
+  }
+};
 // Controller bỏ theo dõi user
 export const unfollowUser = async (req, res) => {
   const id = req.params.id;

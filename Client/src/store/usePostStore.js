@@ -39,9 +39,20 @@ export const usePostStore = create((set, get) => ({
     } catch (error) {
       set({
         isCreating: false,
-        createPostError: error.message,
         createPostSuccess: false,
       });
+
+      // Kiểm tra và hiển thị tất cả lỗi từ backend
+      if (error.response?.data?.errors) {
+        // Nếu có mảng lỗi từ backend
+        error.response.data.errors.forEach((err) => {
+          toast.error(err.message || "Lỗi không xác định từ backend");
+        });
+      } else {
+        // Nếu chỉ có một lỗi đơn lẻ
+        const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
+        toast.error(errorMessage);
+      }
       return false; // Trả về false nếu có lỗi
     } finally {
       set({ isCreating: false });

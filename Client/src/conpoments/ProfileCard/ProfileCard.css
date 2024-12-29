@@ -1,5 +1,5 @@
 .ProfileCard {
-  border-radius: 1.5rem;
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -27,7 +27,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 3rem;
+  margin-top: 0rem;
   gap: 10px;
 }
 .ProfileName > span:nth-of-type(1) {
@@ -76,4 +76,20 @@
   align-self: center;
   margin-bottom: 1rem;
   cursor: pointer;
+}
+.profile-menu {
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+.profile-menu > ul {
+  gap: 1rem;
+  align-items: center;
+}
+.i-profile:hover {
+  cursor: pointer;
+  background: transparent;
+  font-weight: 1000;
 }

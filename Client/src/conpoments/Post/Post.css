@@ -1,4 +1,4 @@
-.share-btn {
+.fb-share {
   margin-top: 10px;
   background-color: #1877f2; /* Màu xanh của Facebook */
   color: white;
@@ -7,10 +7,6 @@
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-}
-
-.share-btn:hover {
-  background-color: #145db2;
 }
 
 .post-container {
@@ -24,7 +20,11 @@
 }
 
 .delete-btn {
-  margin-left: 750px;
+  height: 30px;
+  width: 30px;
+  background: red;
+  margin-bottom: 10px;
+  margin-left: 795px;
 }
 
 .fc-button {

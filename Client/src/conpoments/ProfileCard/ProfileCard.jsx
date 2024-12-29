@@ -100,6 +100,11 @@ const ProfileCard = () => {
             </li>
           </ul>
           <ul>
+            <li className="i-profile">
+              <strong>Provider</strong>: {authUser.provider}
+            </li>
+          </ul>
+          <ul>
             <button className="i-profile" onClick={handleLogout}>
               Đăng xuất
             </button>
@@ -109,7 +114,11 @@ const ProfileCard = () => {
               <Link to="/delete-account">Xóa tài khoản</Link>
             </li>
           </ul>
-          <Link to="/change-password">Đổi mật khẩu</Link>
+          <ul>
+            <li className="i-profile">
+              <Link to="/change-password">Đổi mật khẩu</Link>
+            </li>
+          </ul>
         </div>
       </span>
     </div>

@@ -31,3 +31,21 @@ export const protectRoute = async (req, res, next) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const bannedWords = [
+  "mua bán",
+  "bán",
+  "bán hàng",
+  "giao dịch",
+  "quảng cáo",
+  "lừa đảo",
+  "đặt cọc",
+  "bán nhanh",
+  "giảm giá",
+  "khuyến mãi",
+  "chuyển khoản",
+  "con mẹ",
+  "đả đảo",
+  "cộng sản",
+  "mua hàng",
+];

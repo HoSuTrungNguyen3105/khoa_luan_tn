@@ -153,7 +153,7 @@ const Post = ({ data, currentUserId }) => {
         <div className="post-image-container">
           {isCurrentUserPost && (
             <button
-              className="delete-btn absolute top-2 right-2 p-2 text-black rounded-full focus:outline-none"
+              className="button delete-btn"
               onClick={() => {
                 const confirmDelete = window.confirm(
                   "Bạn có chắc chắn muốn xóa bài đăng này không?"
@@ -163,11 +163,11 @@ const Post = ({ data, currentUserId }) => {
                 }
               }}
             >
-              <X />
+              X
             </button>
           )}
 
-          <Link to={`/post/${data._id}`}>
+          <Link to={`/post/${data._id}?userId=${userId}`}>
             <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-lg aspect-[4/4]">
               {/* Blurred background image */}
               <div

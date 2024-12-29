@@ -1,6 +1,6 @@
 // config/config.js
 const config = {
-  baseUrl: "https://07ba-58-186-28-233.ngrok-free.app",
+  baseUrl: "http://localhost:3000",
 };
 
 export default config;

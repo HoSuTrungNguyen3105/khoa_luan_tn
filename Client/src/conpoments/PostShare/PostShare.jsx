@@ -3,37 +3,35 @@ import "./PostShare.css";
 import { usePostStore } from "../../store/usePostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { FaCheckCircle } from "react-icons/fa"; // Thêm icon
 
 const PostShare = ({ onPostCreateSuccess }) => {
-  // Nhận props callback
-  const { authUser } = useAuthStore(); // Lấy thông tin người dùng đăng nhập từ Zustand
-  const { createPost, isCreating, createPostSuccess, createPostError } =
-    usePostStore(); // Lấy store từ Zustand
-  const fileInputRef = useRef(); // Ref để reset input file
+  const { authUser } = useAuthStore();
+  const { createPost, isCreating } = usePostStore();
+  const fileInputRef = useRef();
+  const [hovered, setHovered] = useState(null); // Để theo dõi nút đang hover
 
-  // State quản lý form data
+  const [setError] = useState("");
   const [formData, setFormData] = useState({
-    userId: authUser?._id || "", // Lấy ID người dùng từ Zustand
-    username: authUser?.username || "", // Lấy username từ authUser
+    userId: authUser?._id || "",
+    username: authUser?.username || "",
     desc: "",
     contact: "",
-    location: "", // Sẽ lưu ID của tỉnh thành
+    location: "",
     image: null,
-    isLost: false,
-    isFound: false,
   });
 
-  // State lưu danh sách tỉnh thành
+  const [postType, setPostType] = useState(""); // State để lưu loại bài đăng
   const [provinces, setProvinces] = useState([]);
   const [loadingProvinces, setLoadingProvinces] = useState(true);
 
-  // Lấy danh sách tỉnh thành từ API khi component được render
   useEffect(() => {
     axios
-      .get("http://localhost:5001/api/post/provinces") // URL API tỉnh thành của bạn
+      .get("http://localhost:5001/api/post/provinces")
       .then((response) => {
-        setProvinces(response.data); // Cập nhật danh sách tỉnh thành
-        setLoadingProvinces(false); // Dừng loading
+        setProvinces(response.data);
+        setLoadingProvinces(false);
       })
       .catch((error) => {
         console.error("Error fetching provinces:", error);
@@ -41,177 +39,183 @@ const PostShare = ({ onPostCreateSuccess }) => {
       });
   }, []);
 
-  // Cập nhật formData khi người dùng chọn tỉnh thành
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleLocationChange = (e) => {
-    setFormData({ ...formData, location: e.target.value }); // Lưu ID vào formData
+    setFormData({ ...formData, location: e.target.value });
   };
 
-  // Cập nhật giá trị cho các trường boolean
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-      // Đảm bảo chỉ một checkbox được chọn
-      isLost: name === "isLost" ? checked : false,
-      isFound: name === "isFound" ? checked : false,
-    }));
-  };
-
-  // Cập nhật trường ảnh
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result }); // Convert image to base64
+        setFormData({ ...formData, image: reader.result });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await createPost(formData); // Gọi hành động createPost từ store
-    if (success) {
-      setFormData({
-        userId: authUser?._id || "",
-        username: authUser?.username || "",
-        desc: "",
-        contact: "",
-        location: "",
-        image: null, // Reset ảnh
-        isLost: false,
-        isFound: false,
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""; // Reset input file
+    setError("");
+    try {
+      const success = await createPost({ ...formData, postType });
+      if (success) {
+        setFormData({
+          userId: authUser?._id || "",
+          username: authUser?.username || "",
+          desc: "",
+          contact: "",
+          location: "",
+          image: null,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        if (onPostCreateSuccess) {
+          onPostCreateSuccess();
+        }
       }
-      // Gọi callback sau khi tạo bài thành công
-      if (onPostCreateSuccess) {
-        onPostCreateSuccess(); // Đóng modal
-      }
+    } catch (error) {
+      console.error("Lỗi khi tạo bài viết:", error);
+      toast.error("Đã xảy ra lỗi khi đăng bài.");
     }
   };
 
-  useEffect(() => {
-    if (authUser) {
-      setFormData((prev) => ({
-        ...prev,
-        userId: authUser._id,
-        username: authUser.username,
-      })); // Cập nhật userId và username nếu authUser thay đổi
-    }
-  }, [authUser]);
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700">
-          Mô tả *
-        </label>
-        <textarea
-          name="desc"
-          value={formData.desc}
-          onChange={handleChange}
-          className="textarea textarea-bordered w-full p-3 rounded-md border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Viết mô tả..."
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700">
-          Liên lạc *
-        </label>
-        <input
-          type="text"
-          name="contact"
-          value={formData.contact}
-          onChange={handleChange}
-          className="input input-bordered w-full p-3 rounded-md border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Số điện thoại"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700">
-          Địa điểm *
-        </label>
-        <select
-          name="location"
-          value={formData.location}
-          onChange={handleLocationChange}
-          className="input input-bordered w-full p-3 rounded-md border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          required
-        >
-          <option value="">Chọn địa điểm</option>
-          {loadingProvinces ? (
-            <option disabled>Loading provinces...</option>
-          ) : (
-            provinces.map((province) => (
-              <option key={province.id} value={province.id}>
-                {province.name}
-              </option>
-            ))
-          )}
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <label className="block text-sm font-semibold text-gray-700">
-          Chọn ảnh *
-        </label>
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={handleImageChange}
-          className="input input-bordered w-full p-3 rounded-md border-gray-300 shadow-sm focus:outline-none"
-        />
-      </div>
-      <div className="space-x-6 flex items-center justify-between">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            name="isLost"
-            checked={formData.isLost}
-            onChange={handleCheckboxChange}
-            className="checkbox checkbox-primary h-5 w-5 text-blue-600 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-          />
-          <span className="ml-2 text-sm text-gray-700 font-medium">Mất Đồ</span>
+    <div className="post-share-container">
+      {!postType && (
+        <div className="space-y-8 max-w-2xl mx-auto text-center">
+          <h2 className="text-3xl font-extrabold text-gray-800">
+            Bạn muốn đăng bài về?
+          </h2>
+          <div className="flex justify-center space-x-6">
+            <button
+              onClick={() => setPostType("isLost")}
+              onMouseEnter={() => setHovered("isLost")} // Khi chuột di vào nút
+              onMouseLeave={() => setHovered(null)} // Khi chuột rời khỏi nút
+              className={`btn w-48 p-5 rounded-lg text-lg font-semibold transition-all duration-300 ${
+                postType === "isLost"
+                  ? "bg-blue-600 text-white scale-110"
+                  : "bg-white text-blue-600 border-2 border-blue-600"
+              } shadow-lg flex items-center justify-center space-x-2 transform ${
+                hovered === "isLost" ? "scale-110" : ""
+              }`}
+            >
+              {(hovered === "isLost" || postType === "isLost") && (
+                <FaCheckCircle className="text-blue-600" />
+              )}
+              <span>Mất đồ</span>
+            </button>
+            <button
+              onClick={() => setPostType("isFound")}
+              onMouseEnter={() => setHovered("isFound")}
+              onMouseLeave={() => setHovered(null)}
+              className={`btn w-48 p-5 rounded-lg text-lg font-semibold transition-all duration-300 ${
+                postType === "isFound"
+                  ? "bg-blue-600 text-white scale-110"
+                  : "bg-white text-blue-600 border-2 border-blue-600"
+              } shadow-lg flex items-center justify-center space-x-2 transform ${
+                hovered === "isFound" ? "scale-110" : ""
+              }`}
+            >
+              {(hovered === "isFound" || postType === "isFound") && (
+                <FaCheckCircle className="text-blue-600" />
+              )}
+              <span>Đã tìm thấy</span>
+            </button>
+          </div>
         </div>
+      )}
 
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            name="isFound"
-            checked={formData.isFound}
-            onChange={handleCheckboxChange}
-            className="checkbox checkbox-primary h-5 w-5 text-green-600 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
-          />
-          <span className="ml-2 text-sm text-gray-700 font-medium">
-            Đã tìm thấy / Nhặt được
-          </span>
-        </div>
-      </div>
+      {postType && (
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
+          <p className="text-md font-semibold text-gray-700">
+            Bài đăng: {postType === "isLost" ? "Mất đồ" : "Đã tìm thấy"}
+          </p>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Mô tả *
+            </label>
+            <textarea
+              name="desc"
+              value={formData.desc}
+              onChange={handleChange}
+              className="textarea textarea-bordered w-full p-3 rounded-md"
+              placeholder="Viết mô tả..."
+              required
+            />
+          </div>
 
-      <button
-        type="submit"
-        className={`btn w-full p-3 rounded-md bg-blue-200 ${
-          isCreating ? "btn-disabled loading" : "btn-primary hover:bg-blue-600"
-        }`}
-        disabled={isCreating}
-      >
-        {isCreating ? "Đang tạo bài..." : "Đăng bài"}
-      </button>
-    </form>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Liên lạc *
+            </label>
+            <input
+              type="text"
+              name="contact"
+              value={formData.contact}
+              onChange={handleChange}
+              className="input input-bordered w-full p-3 rounded-md"
+              placeholder="Số điện thoại"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Địa điểm *
+            </label>
+            <select
+              name="location"
+              value={formData.location}
+              onChange={handleLocationChange}
+              className="input input-bordered w-full p-3 rounded-md"
+              required
+            >
+              <option value="">Chọn địa điểm</option>
+              {loadingProvinces ? (
+                <option disabled>Loading provinces...</option>
+              ) : (
+                provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.name}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Chọn ảnh *
+            </label>
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="input input-bordered w-full p-3 rounded-md"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className={`btn w-full p-3 rounded-md ${
+              isCreating
+                ? "btn-disabled loading"
+                : "btn-primary hover:bg-blue-600"
+            }`}
+            disabled={isCreating}
+          >
+            {isCreating ? "Đang tạo bài..." : "Đăng bài"}
+          </button>
+        </form>
+      )}
+    </div>
   );
 };
 

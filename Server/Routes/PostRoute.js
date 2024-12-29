@@ -17,22 +17,17 @@ import {
   getPostApprove,
 } from "../Controllers/PostController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
-import authenticateToken from "../lib/auth.js";
 
 const router = express.Router();
 
 router.post("/posts", createPost); // Để tạo bài viết
 router.get("/posts/:id", getPost); // Để lấy một bài viết theo id
 router.get("/posts/user/:id", getPostToProfile); // Để lấy một bài viết theo id
-// router.get("/getFetch", fetchPosts); // Để lấy một bài viết theo id
-
-// router.put("/posts/:id", updatePost); // Để cập nhật bài viết
 router.put("/update/:id", protectRoute, updatePost);
 router.delete("/posts/:id", protectRoute, deletePost); // Để xóa bài viết
 router.delete("/user/:id", protectRoute, delete1UserPost); // Để xóa bài viết
 
 router.get("/postsId/allItems", getAllPosts); // Để lấy tất cả bài viết
-// router.get("/search", searchPosts);
 router.get("/provinces", (req, res) => {
   res.json(provinces); // Trả về dữ liệu tỉnh thành
 });

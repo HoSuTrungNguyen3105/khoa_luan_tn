@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { axiosInstance } from "../../lib/axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import "./Auth.css";
 
 const ChangePassword = () => {
   const [oldPassword, setOldPassword] = useState("");
@@ -10,7 +11,6 @@ const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const handleGoBack = () => navigate(-1);
-
   const handleChangePassword = async (e) => {
     e.preventDefault();
 
@@ -32,6 +32,7 @@ const ChangePassword = () => {
         { oldPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      navigate("/");
       toast.success(response.data.message || "Đổi mật khẩu thành công!");
       setOldPassword("");
       setNewPassword("");
@@ -48,7 +49,7 @@ const ChangePassword = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-        <button className="go-back-btn" onClick={handleGoBack}>
+        <button className="button btn-goback" onClick={handleGoBack}>
           Quay lại
         </button>
         <h1 className="text-2xl font-semibold text-center text-gray-700 mb-6">
@@ -109,7 +110,7 @@ const ChangePassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-600 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="button btn-change"
           >
             {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
           </button>

@@ -46,7 +46,35 @@
   font-size: 0.85rem;
 }
 
-/* right side */
+.infoForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.infoInput {
+  border: none;
+  outline: none;
+  background-color: var(--inputColor);
+  border-radius: 8px;
+  padding: 20px;
+  flex: 1;
+}
+
+.infoForm > div {
+  display: flex;
+  gap: 1rem;
+  height: 2rem;
+  width: 90%;
+}
+
+.infoButton {
+  width: 6rem;
+  height: 2rem;
+  align-self: flex-end;
+}
 
 .authForm {
   background-color: var(--cardColor);
@@ -60,16 +88,14 @@
   justify-content: center;
 }
 .infoButton {
-  font-size: 12px;
   width: 100%;
 }
-.authForm > h3 {
-  font-size: 20px;
+.btn-change {
+  height: 30px;
+  width: 100%;
 }
-.forgot-password-title {
-  font-size: 36px; /* Làm chữ to hơn */
-  text-transform: uppercase; /* Viết hoa toàn bộ */
-  letter-spacing: 1.5px; /* Giãn chữ nhẹ */
-  margin-bottom: 20px; /* Tạo khoảng cách bên dưới */
-  text-align: center; /* Căn giữa chữ */
+.btn-goback {
+  width: 5rem;
+  height: 2rem;
+  align-self: flex-end;
 }

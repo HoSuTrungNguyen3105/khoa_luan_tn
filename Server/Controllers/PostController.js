@@ -1,51 +1,77 @@
 import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
 import cloudinary from "../lib/cloudinary.js";
-import mongoose from "mongoose";
+import { bannedWords } from "../middleware/auth_middleware.js";
+
 export const createPost = async (req, res) => {
   try {
     const { image, userId, desc, contact, location, isLost, isFound } =
       req.body;
-    // Tìm thông tin người dùng dựa trên userId
+
+    // Kiểm tra người dùng
     const user = await UserModel.findById(userId);
     if (!user) {
-      return res.status(400).json({ message: "User không tìm thấy" });
+      return res
+        .status(400)
+        .json({ message: "User không tìm thấy", field: "userId" });
     }
+
     // Kiểm tra nếu không có ảnh
     if (!image) {
-      return res.status(400).json({ message: "Image bị thiếu" });
+      return res
+        .status(400)
+        .json({ message: "Image bị thiếu", field: "image" });
     }
+
+    // Làm sạch nội dung mô tả
+    const cleanedDesc = desc
+      .replace(/\s+/g, " ") // Thay tất cả khoảng trắng dư thừa thành một khoảng trắng duy nhất
+      .trim() // Loại bỏ khoảng trắng ở đầu và cuối chuỗi
+      .toLowerCase(); // Chuyển tất cả chữ thành chữ thường
+
+    // Kiểm tra nội dung dựa trên từ bị cấm
+    const containsBannedWords = bannedWords.some(
+      (word) => cleanedDesc.includes(word.toLowerCase()) // Đảm bảo rằng từ bị cấm cũng được chuyển thành chữ thường
+    );
+
+    if (containsBannedWords) {
+      return res.status(400).json({
+        message: "Nội dung chứa từ bị cấm",
+        field: "desc",
+        reason: "Vui lòng loại bỏ các từ không phù hợp khỏi mô tả.",
+      });
+    }
+
     // Upload ảnh lên Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(image, {
-      resource_type: "auto", // Tự động nhận dạng loại file
+      resource_type: "auto",
     });
 
-    // Tạo bài viết mới với URL ảnh từ Cloudinary
+    // Tạo bài viết mới
     const newPost = new PostModel({
-      userId: req.body.userId,
-      username: user.username, // Lấy username từ UserModel và lưu vào bài đăng
-      desc: req.body.desc,
-      image: uploadResponse.secure_url, // Lưu URL ảnh từ Cloudinary
+      userId,
+      username: user.username,
+      desc,
+      image: uploadResponse.secure_url,
       category: req.body.category,
-      location: req.body.location,
-      contact: req.body.contact,
-      isApproved: false, // Mặc định chưa duyệt
-      isLost: isLost || false, // Mặc định là false nếu không được gửi
-      isFound: isFound || false, // Mặc định là false nếu không được gửi
+      location,
+      contact,
+      isApproved: false, // Tự động duyệt nếu nội dung hợp lệ
+      isLost: isLost || false,
+      isFound: isFound || false,
     });
-    // Lưu bài viết vào cơ sở dữ liệu
+
     await newPost.save();
-    // Gửi phản hồi
     res.status(200).json(newPost);
   } catch (error) {
-    console.error("Error:Lỗi đăng bài", error);
-    return res.status(500).json({
-      message: "Có lỗi xảy ra khi tạo bài viết",
+    console.error("Lỗi tạo bài viết:", error);
+    res.status(500).json({
+      message: "Lỗi tạo bài viết",
       error: error.message,
+      field: "server",
     });
   }
 };
-
 export const getPost = async (req, res) => {
   const postId = req.params.id;
   try {

@@ -23,7 +23,7 @@ const Posts = () => {
   }, [createPostSuccess]); // Chỉ chạy khi createPostSuccess thay đổi
 
   // Lọc danh sách bài viết đã duyệt
-  const approvedPosts = posts.filter((post) => !post.isApproved);
+  const approvedPosts = posts.filter((post) => !post.isApproved && post.userId);
 
   return (
     <div className="Posts">

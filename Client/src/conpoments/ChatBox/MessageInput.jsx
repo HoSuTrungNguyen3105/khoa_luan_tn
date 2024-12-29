@@ -85,27 +85,29 @@ const MessageInput = () => {
             ref={fileInputRef}
             onChange={handleImageChange}
           />
-
+          <div>
+            <button
+              type="button"
+              className={`btn btn-circle p-1 ${
+                imagePreview ? "text-emerald-400" : "text-zinc-400"
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload image"
+            >
+              <Image size={16} />
+            </button>
+          </div>
+        </div>
+        <div>
           <button
-            type="button"
-            className={`btn btn-circle p-1 ${
-              imagePreview ? "text-emerald-400" : "text-zinc-400"
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-            title="Upload image"
+            type="submit"
+            className=" btn btn-circle p-2 text-white bg-emerald-400 hover:bg-emerald-300 focus:ring-1 focus:ring-emerald-400"
+            disabled={!text.trim() && !imagePreview}
+            title="Send message"
           >
-            <Image size={16} />
+            <Send size={16} />
           </button>
         </div>
-
-        <button
-          type="submit"
-          className="btn btn-circle p-2 text-white bg-emerald-400 hover:bg-emerald-300 focus:ring-1 focus:ring-emerald-400"
-          disabled={!text.trim() && !imagePreview}
-          title="Send message"
-        >
-          <Send size={16} />
-        </button>
       </form>
     </div>
   );

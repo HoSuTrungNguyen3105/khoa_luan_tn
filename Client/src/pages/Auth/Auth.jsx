@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Logo from "../../img/logo.png";
 import "./Auth.css";
 import { useAuthStore } from "../../store/useAuthStore";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Auth = ({ isAdminLogin = false }) => {
   // Truyền isAdminLogin qua props
@@ -63,7 +64,9 @@ function Login({ isAdminLogin }) {
   return (
     <div className="a-right">
       <form className="infoForm authForm" onSubmit={handleSubmit}>
-        <h3>{isAdminLogin ? "Đăng Nhập Admin" : "Đăng Nhập Người Dùng"}</h3>
+        <h3 style={{ fontSize: "20px" }}>
+          {isAdminLogin ? "Đăng Nhập Admin" : "Đăng Nhập Người Dùng"}
+        </h3>
         {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
         <div>
           <input
@@ -87,7 +90,6 @@ function Login({ isAdminLogin }) {
             }
           />
         </div>
-
         <button
           type="submit"
           className="button infoButton"
@@ -102,7 +104,6 @@ function Login({ isAdminLogin }) {
             "Đăng nhập"
           )}
         </button>
-
         <div>
           <p className="text-base-content/60" style={{ fontSize: "12px" }}>
             Chưa có tài khoản?{" "}
@@ -115,6 +116,14 @@ function Login({ isAdminLogin }) {
             </Link>
           </p>
         </div>
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            console.log(credentialResponse);
+          }}
+          onError={() => {
+            console.log("Login Failed");
+          }}
+        />
 
         <div>
           <p className="text-base-content/60" style={{ fontSize: "12px" }}>

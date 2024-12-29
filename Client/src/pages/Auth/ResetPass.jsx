@@ -48,9 +48,7 @@ function Reset() {
     <div className="a-right">
       <form className="infoForm authForm" onSubmit={handleSubmit}>
         <div className="form-control">
-          <TfiEmail className="w-6 h-6 text-primary" />
           <h3>Nhập mật khẩu mới</h3>
-
           <div className="form-control">
             <input
               className="infoInput"
@@ -59,8 +57,7 @@ function Reset() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
-          <button type="submit" className="btn btn-primary w-full">
+          <button type="submit" className="btn btn-reset">
             Submit
           </button>
         </div>

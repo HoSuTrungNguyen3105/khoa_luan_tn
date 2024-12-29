@@ -11,7 +11,7 @@ const FacebookShareButton = ({ postId }) => {
   };
 
   return (
-    <button onClick={handleShare} className="fb-share-button">
+    <button onClick={handleShare} className="button fb-share">
       Chia sẻ
     </button>
   );

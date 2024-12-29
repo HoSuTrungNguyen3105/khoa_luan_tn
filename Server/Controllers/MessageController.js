@@ -1,80 +1,8 @@
 import messageModel from "../Models/messageModel.js";
+import Notification from "../Models/notificationModel.js";
 import UserModel from "../Models/userModel.js";
 import cloudinary from "../lib/cloudinary.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
-//import { getReceiverSocketId, io } from "../lib/socket.js";
-
-// export const getUsersForSidebar = async (req, res) => {
-//   // Controller getContacts
-//   try {
-//     const loggedInUserId = req.user._id; // ID của người dùng hiện tại
-
-//     // Tìm tất cả các cuộc hội thoại mà user đã nhắn tin và đã follow nhau
-//     const contacts = await messageModel.aggregate([
-//       {
-//         $match: {
-//           $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }],
-//           text: { $exists: true, $ne: "" }, // Chỉ lấy tin nhắn có text không rỗng
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: null, // Không nhóm theo trường cụ thể nào
-//           contactIds: {
-//             $addToSet: {
-//               $cond: [
-//                 { $ne: ["$senderId", loggedInUserId] },
-//                 "$senderId", // Nếu senderId không phải user hiện tại, thì lấy senderId
-//                 "$receiverId", // Ngược lại, lấy receiverId
-//               ],
-//             },
-//           },
-//         },
-//       },
-//     ]);
-
-//     // Kiểm tra xem người dùng có theo dõi nhau hay không
-//     const followings = await UserModel.find({
-//       _id: { $in: contacts[0]?.contactIds },
-//     });
-
-//     const validContacts = followings.filter((user) => {
-//       // Kiểm tra nếu người dùng đã theo dõi nhau
-//       return (
-//         user.followers.includes(loggedInUserId) &&
-//         user.following.includes(loggedInUserId)
-//       );
-//     });
-
-//     res.status(200).json(validContacts);
-//   } catch (error) {
-//     console.error("Error in getContacts:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
-
-// export const getUsersForSidebar = async (req, res) => {
-//   try {
-//     const loggedInUserId = req.user._id; // ID người dùng hiện tại từ protectRoute
-//     // Tìm thông tin người dùng hiện tại
-//     const loggedInUser = await UserModel.findById(loggedInUserId);
-
-//     if (!loggedInUser) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     // Lấy danh sách người dùng mà user hiện tại đã follow
-//     const users = await UserModel.find({
-//       _id: { $in: loggedInUser.followers },
-//       _id: { $in: loggedInUser.following },
-//     }).select("-password");
-
-//     res.status(200).json(users);
-//   } catch (error) {
-//     console.error("Error in getUsersForSidebar:", error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// };
 
 export const getUsersForSidebar = async (req, res) => {
   try {
@@ -193,12 +121,14 @@ export const sendMessage = async (req, res) => {
     const senderId = req.user._id;
 
     let imageUrl;
+
+    // Nếu có ảnh, upload ảnh lên Cloudinary
     if (image) {
-      // Upload base64 image to cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
 
+    // Tạo tin nhắn mới
     const newMessage = new messageModel({
       senderId,
       receiverId,
@@ -206,12 +136,31 @@ export const sendMessage = async (req, res) => {
       image: imageUrl,
     });
 
+    // Lưu tin nhắn vào cơ sở dữ liệu
     await newMessage.save();
 
+    // Tìm kiếm thông tin người nhận tin nhắn
+    const receiver = await UserModel.findById(receiverId);
+    const sender = await UserModel.findById(senderId);
+
+    // Kiểm tra nếu người nhận có socket ID để gửi tin nhắn qua socket
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
+    // Tạo thông báo cho người nhận
+    const notification = new Notification({
+      userId: receiverId, // Người nhận thông báo
+      senderId: senderId, // Người gửi thông báo
+      message: `Bạn có tin nhắn mới từ ${sender.username}: ${text}`, // Nội dung thông báo
+      type: "message",
+    });
+
+    // Lưu thông báo vào cơ sở dữ liệu
+    await notification.save();
+
+    // Trả lại tin nhắn mới
     res.status(201).json(newMessage);
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);

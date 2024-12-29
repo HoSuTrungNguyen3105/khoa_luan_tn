@@ -1,25 +1,84 @@
 import React, { useEffect, useState } from "react";
 import { usePostStore } from "../../store/usePostStore";
 import { useDeletestore } from "../../store/useDeletestore";
-import { FaTrashAlt, FaCheck, FaTimes } from "react-icons/fa";
+import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx"; // Import thư viện XLSX
+import HtmlDocx from "html-docx-js/dist/html-docx"; // Import html-docx-js for Word export
 
 const AdminDash = () => {
   const { posts, fetchPosts, toggleApproval, isLoading, error, setPosts } =
     usePostStore();
   const { deletePost } = useDeletestore();
-  const [showBulkApprovalMenu, setShowBulkApprovalMenu] = useState(false); // State để hiển thị menu
-  const [selectedPosts, setSelectedPosts] = useState([]); // Mảng lưu các bài viết được chọn
-  const [showCheckbox, setShowCheckbox] = useState(false); // Trạng thái hiển thị checkbox
+  const [showBulkApprovalMenu, setShowBulkApprovalMenu] = useState(false); // State to show approval menu
+  const [selectedPosts, setSelectedPosts] = useState([]); // Array for selected posts
+  const [showCheckbox, setShowCheckbox] = useState(false); // State for checkbox visibility
   const [loadingButtons, setLoadingButtons] = useState({
     bulkDelete: false,
     bulkApproval: false,
   });
+
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+  // Export function for Excel
+  const exportToExcel = () => {
+    const wb = XLSX.utils.book_new(); // Create a new workbook
+    const ws = XLSX.utils.json_to_sheet(posts); // Convert posts array to sheet
 
-  // Xử lý xóa bài viết đã chọn
+    XLSX.utils.book_append_sheet(wb, ws, "Posts"); // Append sheet to workbook
+
+    // Generate Excel file and prompt user to download
+    XLSX.writeFile(wb, "posts.xlsx");
+  };
+  // Word export function
+  const downloadWord = () => {
+    const postsHtml = `
+  <html>
+    <head><title>Posts</title></head>
+    <body>
+      <h1>Posts List</h1>
+      <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>#</th> <!-- Column for serial number -->
+            <th>Title</th>
+            <th>Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${posts
+            .map(
+              (post, index) => `
+                <tr>
+                  <td>${index + 1}</td> <!-- Serial number (index + 1) -->
+                  <td>${post.desc}</td>
+                  <td>${
+                    post.isLost
+                      ? "Lost"
+                      : post.isFound
+                      ? "Found"
+                      : "Unspecified"
+                  }</td>
+                  <td>${post.isApproved ? "Blocked" : "Active"}</td>
+                </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    </body>
+  </html>
+`;
+
+    const converted = HtmlDocx.asBlob(postsHtml); // Convert HTML to Word document Blob
+    const url = URL.createObjectURL(converted); // Create a URL for the Blob
+    const link = document.createElement("a"); // Create a link element
+    link.href = url; // Set the link href to the Blob URL
+    link.download = "posts.docx"; // Set the file name
+    link.click(); // Trigger the download
+  };
+  // Handle bulk delete of selected posts
   const handleBulkDelete = async () => {
     if (selectedPosts.length === 0) {
       alert("Vui lòng chọn ít nhất một bài viết!");
@@ -34,8 +93,8 @@ const AdminDash = () => {
             await deletePost(postId);
           })
         );
-        fetchPosts(); // Làm mới danh sách bài viết sau khi xóa
-        setSelectedPosts([]); // Xóa danh sách bài viết đã chọn
+        fetchPosts(); // Refresh posts list after deletion
+        setSelectedPosts([]); // Clear selected posts list
       } catch (error) {
         console.error("Lỗi khi xóa bài viết:", error);
       } finally {
@@ -43,13 +102,14 @@ const AdminDash = () => {
       }
     }
   };
-  // Xử lý xóa bài viết và làm mới danh sách
+
+  // Handle individual post deletion
   const handleDelete = async (postId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) {
       try {
         setLoadingButtons((prev) => ({ ...prev, [postId]: true }));
         await deletePost(postId);
-        fetchPosts(); // Làm mới danh sách bài viết sau khi xóa
+        fetchPosts(); // Refresh posts list after deletion
       } catch (error) {
         console.error("Lỗi khi xóa bài viết:", error);
       } finally {
@@ -57,7 +117,8 @@ const AdminDash = () => {
       }
     }
   };
-  // Cập nhật trạng thái của checkbox
+
+  // Handle checkbox selection for posts
   const handleCheckboxChange = (postId) => {
     setSelectedPosts((prev) =>
       prev.includes(postId)
@@ -66,13 +127,11 @@ const AdminDash = () => {
     );
   };
 
-  // Sửa lại hàm toggleApproval
+  // Handle approval toggling for individual post
   const handleToggleApproval = async (postId, newStatus) => {
     try {
       setLoadingButtons((prev) => ({ ...prev, [postId]: true }));
-      // Giả sử toggleApproval sẽ thay đổi trạng thái isApproved
       await toggleApproval(postId, newStatus);
-
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
           post._id === postId ? { ...post, isApproved: newStatus } : post
@@ -85,14 +144,14 @@ const AdminDash = () => {
     }
   };
 
-  // Sửa lại handleBulkApproval để gọi đúng toggleApproval
+  // Handle bulk approval (approve/unapprove) for selected posts
   const handleBulkApproval = async (action) => {
     if (selectedPosts.length === 0) {
       alert("Vui lòng chọn ít nhất một bài viết để thực hiện hành động!");
       return;
     }
 
-    const newStatus = action === "approve"; // Chặn = true, bỏ chặn = false
+    const newStatus = action === "approve";
 
     if (
       window.confirm(
@@ -108,18 +167,18 @@ const AdminDash = () => {
           selectedPosts.map(async (postId) => {
             const post = posts.find((post) => post._id === postId);
             if (post) {
-              await handleToggleApproval(postId, newStatus); // Thực hiện chặn hoặc bỏ chặn
+              await handleToggleApproval(postId, newStatus); // Perform approval/unapproval
             }
           })
         );
 
-        fetchPosts(); // Làm mới danh sách bài viết sau khi thực hiện hành động
-        setSelectedPosts([]); // Xóa danh sách bài viết đã chọn
+        fetchPosts(); // Refresh posts list after bulk action
+        setSelectedPosts([]); // Clear selected posts list
       } catch (error) {
         console.error("Lỗi khi chặn/bỏ chặn bài viết:", error);
       } finally {
         setLoadingButtons((prev) => ({ ...prev, bulkApproval: false }));
-        setShowBulkApprovalMenu(false); // Đóng menu khi đã xử lý xong
+        setShowBulkApprovalMenu(false); // Close the menu after completion
       }
     }
   };
@@ -151,91 +210,71 @@ const AdminDash = () => {
         </button>
       </div>
 
-      <div className="flex justify-start space-x-4">
-        {/* <button
-          onClick={handleBulkDelete}
-          className="btn btn-danger py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:bg-red-300 disabled:cursor-not-allowed"
-          disabled={selectedPosts.length === 0 || loadingButtons.bulkDelete}
-          
-        >
-          {loadingButtons.bulkDelete ? "Đang xóa..." : "Xóa"}
-        </button>
-
+      {/* Toggle between checkbox and number view */}
+      <div className="mb-4 flex justify-start space-x-4">
         <button
-          onClick={() => setShowBulkApprovalMenu((prev) => !prev)} // Toggle menu
-          className="btn btn-warning px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:bg-yellow-300 disabled:cursor-not-allowed"
-          disabled={selectedPosts.length === 0 || loadingButtons.bulkApproval}
+          onClick={() => setShowCheckbox((prev) => !prev)}
+          className="btn btn-info py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
         >
-          {loadingButtons.bulkApproval ? "Đang thực hiện..." : "Chặn / Bỏ chặn"}
+          {showCheckbox ? "Hiển thị số thứ tự" : "Hiển thị checkbox"}
         </button>
-
-        {showBulkApprovalMenu && (
-          <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-40">
-            <button
-              onClick={() => handleBulkApproval("unapprove")}
-              className="block w-full text-yellow-600 hover:bg-yellow-200 px-4 py-2 text-left"
-            >
-              Chặn các bài viết đã chọn
-            </button>
-            <button
-              onClick={() => handleBulkApproval("approve")}
-              className="block w-full text-green-600 hover:bg-green-200 px-4 py-2 text-left"
-            >
-              Bỏ chặn các bài viết đã chọn
-            </button>
-          </div>
-        )} */}
-
-        {/* Nút chuyển đổi giữa checkbox và số thứ tự */}
-        <div className="mb-4 flex justify-start space-x-4">
-          <button
-            onClick={() => setShowCheckbox((prev) => !prev)}
-            className="btn btn-info py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          >
-            {showCheckbox ? "Hiển thị số thứ tự" : "Hiển thị checkbox"}
-          </button>
-        </div>
-        {selectedPosts.length > 0 && (
-          <div className="mb-4 flex justify-start space-x-4">
-            <button
-              onClick={handleBulkDelete}
-              className="btn btn-danger py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:bg-red-300 disabled:cursor-not-allowed"
-              disabled={loadingButtons.bulkDelete}
-            >
-              {loadingButtons.bulkDelete ? "Đang xóa..." : "Xóa"}
-            </button>
-
-            <button
-              onClick={() => setShowBulkApprovalMenu((prev) => !prev)}
-              className="btn btn-warning px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:bg-yellow-300 disabled:cursor-not-allowed"
-              disabled={loadingButtons.bulkApproval}
-            >
-              {loadingButtons.bulkApproval
-                ? "Đang thực hiện..."
-                : "Chặn / Bỏ chặn"}
-            </button>
-          </div>
-        )}
-
-        {/* Menu lựa chọn "Chặn" và "Bỏ chặn" */}
-        {showBulkApprovalMenu && (
-          <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-40">
-            <button
-              onClick={() => handleBulkApproval("unapprove")}
-              className="block w-full text-left px-4 py-2 text-yellow-600 hover:bg-yellow-200"
-            >
-              Chặn các bài viết đã chọn
-            </button>
-            <button
-              onClick={() => handleBulkApproval("approve")}
-              className="block w-full text-left px-4 py-2 text-green-600 hover:bg-green-200"
-            >
-              Bỏ chặn các bài viết đã chọn
-            </button>
-          </div>
-        )}
+        {/* Export buttons */}
+        <button
+          onClick={downloadWord} // Call the function to export posts to Word
+          className="btn btn-primary bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
+        >
+          Xuất ra Word
+        </button>
+        <button
+          onClick={exportToExcel} // Gọi hàm xuất Excel khi nhấn nút
+          className="btn btn-primary bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700"
+        >
+          Xuất ra Excel
+        </button>
       </div>
 
+      {/* Bulk action buttons */}
+      {selectedPosts.length > 0 && (
+        <div className="mb-4 flex justify-start space-x-4">
+          <button
+            onClick={handleBulkDelete}
+            className="btn btn-danger py-2 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:bg-red-300 disabled:cursor-not-allowed"
+            disabled={loadingButtons.bulkDelete}
+          >
+            {loadingButtons.bulkDelete ? "Đang xóa..." : "Xóa"}
+          </button>
+
+          <button
+            onClick={() => setShowBulkApprovalMenu((prev) => !prev)}
+            className="btn btn-warning px-4 py-2 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 disabled:bg-yellow-300 disabled:cursor-not-allowed"
+            disabled={loadingButtons.bulkApproval}
+          >
+            {loadingButtons.bulkApproval
+              ? "Đang thực hiện..."
+              : "Chặn / Bỏ chặn"}
+          </button>
+        </div>
+      )}
+
+      {/* Bulk approval menu */}
+      {showBulkApprovalMenu && (
+        <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-40">
+          <button
+            onClick={() => handleBulkApproval("unapprove")}
+            className="block w-full text-left px-4 py-2 text-yellow-600 hover:bg-yellow-200"
+          >
+            Chặn các bài viết đã chọn
+          </button>
+          <button
+            onClick={() => handleBulkApproval("approve")}
+            className="block w-full text-left px-4 py-2 text-green-600 hover:bg-green-200"
+          >
+            Bỏ chặn các bài viết đã chọn
+          </button>
+        </div>
+      )}
+
+      {/* Table displaying posts */}
       <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
         <table
           className="table table-zebra w-full border-collapse"
@@ -278,7 +317,7 @@ const AdminDash = () => {
                       onChange={() => handleCheckboxChange(post._id)}
                     />
                   ) : (
-                    index + 1 // Hiển thị số thứ tự nếu không hiển thị checkbox
+                    index + 1
                   )}
                 </td>
                 <td className="text-center truncate">
@@ -286,7 +325,6 @@ const AdminDash = () => {
                     {post.desc}
                   </Link>
                 </td>
-
                 <td className="text-center truncate">
                   {post.isLost
                     ? "Đồ bị mất"
@@ -325,7 +363,7 @@ const AdminDash = () => {
                       e.stopPropagation();
                       handleDelete(post._id);
                     }}
-                    className=" text-red-950"
+                    className="text-red-950"
                     disabled={loadingButtons[post._id]}
                   >
                     {loadingButtons[post._id] ? "..." : <FaTrashAlt />}

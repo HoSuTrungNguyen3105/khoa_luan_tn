@@ -4,6 +4,7 @@ import {
   deleteUser,
   fetchFollowingStatus,
   followUser,
+  getNotifications,
   getUserProfile,
   searchPost,
   searchUser,
@@ -12,17 +13,14 @@ import {
 import { protectRoute } from "../middleware/auth_middleware.js";
 const router = express.Router();
 
-// router.get("/profile/:id", getUser);
 router.get("/profile/:id", getUserProfile);
 router.get("/search/users", searchUser);
 router.get("/search/posts", searchPost);
-// router.put("/:id", updateUser);
+router.get("/notifications/:userId", getNotifications);
 router.delete("/:id", deleteUser);
 router.put("/:id/follow", followUser);
 router.put("/:id/unfollow", unfollowUser);
 router.get("/:targetUserId/is-following", fetchFollowingStatus);
 router.post("/change-password", protectRoute, changePassword);
-// router.post("/follow", followUser);
-// router.post("/unfollow", unfollowUser);
 
 export default router;

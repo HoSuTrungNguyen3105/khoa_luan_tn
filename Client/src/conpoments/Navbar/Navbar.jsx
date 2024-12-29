@@ -2,7 +2,8 @@ import { Link } from "react-router-dom";
 import { LogOut, PackageSearch, User } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { RiAdminLine } from "react-icons/ri";
-
+import logo from "../../img/logo.png";
+import "./Navbar.css";
 const Navbar = () => {
   const { logout, authUser } = useAuthStore();
 
@@ -15,11 +16,11 @@ const Navbar = () => {
             to="/"
             className="flex items-center gap-2.5 hover:opacity-80 transition-opacity duration-300"
           >
-            <div className="rounded-lg bg-primary/10 p-3 flex items-center justify-center">
-              <PackageSearch className="w-10 h-10 text-primary" />
+            <div className="Logo">
+              <img src={logo} alt="Logo" />
             </div>
             <h1 className="text-lg font-semibold text-gray-900">
-              Lost and Found
+              TL Socical Media
             </h1>
           </Link>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+
 import { Helmet } from "react-helmet"; // Import React Helmet
 import { usePostStore } from "../../store/usePostStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -12,11 +13,17 @@ import toast from "react-hot-toast";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // Lấy query string từ URL
   const { getPostById, post, isLoading, error, updatePost, deletePost } =
     usePostStore(); // Add deletePost
   const { authUser } = useAuthStore();
   const { followUser, unfollowUser, fetchFollowingStatus } = useFollowStore();
-  const [user, setUser] = useState(null);
+  const [user, setUserId] = useState(null);
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const fetchedUserId = queryParams.get("userId");
+    setUserId(fetchedUserId);
+  }, [location]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedPost, setEditedPost] = useState({
     desc: "",
@@ -137,7 +144,7 @@ const PostDetail = () => {
     if (window.confirm("Bạn chắc chắn muốn xóa bài đăng này?")) {
       try {
         await deletePost(post._id); // Call deletePost to remove the post
-        toast.success("Xoa thanh cong !");
+        toast.success("Xóa thành công !");
         navigate("/"); // Navigate to the homepage or any other page
       } catch (error) {
         console.error("Error deleting post:", error);
@@ -176,9 +183,13 @@ const PostDetail = () => {
       </Helmet>
 
       <div className="post-header">
-        <h1>{user?.username || "Người dùng ẩn danh"}</h1>
+        {user && (
+          <p>
+            <b>Người đăng:</b> {user}
+          </p>
+        )}
         {authUser && (
-          <button className="go-back-btn" onClick={handleGoBack}>
+          <button className="button btn-back" onClick={handleGoBack}>
             Quay lại
           </button>
         )}
@@ -225,7 +236,9 @@ const PostDetail = () => {
             <img src={post.image} alt="Post" className="post-image" />
           )}
           <p className="post-contact">
-            <button className="contact-button">📞 {post.contact}</button>
+            <button className="contact-button">
+              Liên lạc qua số : {post.contact}
+            </button>
           </p>
           <p className="post-location">
             Địa điểm: {getProvinceNameById(post.location)}

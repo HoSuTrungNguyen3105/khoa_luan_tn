@@ -69,10 +69,9 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true, registerError: null });
     try {
-      const res = await axiosInstance.post("/auth/register", data);
-      set({ authUser: res.data });
-      toast.success("Đăng kí tài khoản thành công");
+      await axiosInstance.post("/auth/register", data);
       get().connectSocket();
+      return true;
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
       set({ registerError: errorMessage }); // Lưu thông báo lỗi
@@ -83,6 +82,20 @@ export const useAuthStore = create((set, get) => ({
       set({ isSigningUp: false });
     }
   },
+
+  verifyEmail: async (email, code) => {
+    try {
+      await axiosInstance.post("/auth/verify-email", {
+        email,
+        verificationCode: code,
+      });
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Xác thực thất bại");
+      return false;
+    }
+  },
+
   login: async (data) => {
     set({ isLoggingIn: true });
     try {

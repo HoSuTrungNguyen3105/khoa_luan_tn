@@ -1,27 +1,27 @@
-.infoForm {
+.ProfileForm {
   display: grid;
-  gap: 1em;
+  gap: 1rem;
 }
-.infoForm > div > ul {
+.ProfileForm > div > ul {
   gap: 0rem;
   height: 4rem;
   width: 100%;
 }
 
-.infoForm > div {
+.ProfileForm > div {
   display: flex;
   gap: 1rem;
   height: 5rem;
   width: 90%;
 }
 
-.infoForm > div > ul > p {
+.ProfileForm > div > ul > p {
   display: flex;
   gap: 1rem;
   height: 4rem;
   width: 100%;
 }
-.infoInput {
+.ProfileInput {
   border: none;
   outline: none;
   background-color: var(--inputColor);

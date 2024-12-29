@@ -25,6 +25,8 @@ import AllUserChat from "./conpoments/ChatBox/AllUserChat.jsx";
 import ChangePassword from "./pages/Auth/ChangePassword.jsx";
 import UserProfile from "./conpoments/Admin/UserProfile.jsx";
 import useCheckUserStatus from "./lib/check.js";
+import ErrorPage from "./ErrorPage.jsx";
+import Setting from "./conpoments/Admin/Setting.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -107,10 +109,11 @@ const App = () => {
             <Route path="admin-report-post" element={<ReportPost />} />{" "}
             <Route path="admin-all-chat" element={<AllUserChat />} />{" "}
             <Route path="profile/:userId" element={<UserProfile />} />
+            <Route path="admin-setting" element={<Setting />} />{" "}
             {/* Các route khác có thể thêm ở đây */}
           </Route>
           {/* Các route khác */}
-          <Route path="*" element={<div>Lỗi</div>} />
+          <Route path="*" element={<ErrorPage />} />
           <Route path="/forget-password" element={<ForgetPass />} />{" "}
           <Route path="/reset-password/:token" element={<ResetPass />} />{" "}
           {/* Protected Routes */}

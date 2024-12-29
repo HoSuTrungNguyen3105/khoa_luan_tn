@@ -5,13 +5,13 @@ import { Camera } from "lucide-react";
 import { axiosInstance } from "../../lib/axios";
 
 const UserProfile = () => {
-  const { userId } = useParams();
-  const navigate = useNavigate(); // Hook để điều hướng
-  const [userData, setUserData] = useState(null); // Dữ liệu người dùng
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { userId } = useParams(); // Lấy userId từ URL
+  const navigate = useNavigate(); // Hook điều hướng trang
+  const [userData, setUserData] = useState(null); // Lưu trữ thông tin người dùng
+  const [loading, setLoading] = useState(true); // Trạng thái đang tải
+  const [error, setError] = useState(null); // Lỗi nếu có
 
-  // Fetch thông tin người dùng
+  // Fetch thông tin người dùng từ API
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -23,35 +23,35 @@ const UserProfile = () => {
         setLoading(false);
       }
     };
-
     fetchUserData();
   }, [userId]);
 
-  // Handle block/unblock user
+  // Xử lý chặn hoặc bỏ chặn người dùng
   const handleBlockUser = async () => {
     try {
       const response = await axiosInstance.put(`/admin/block/${userId}`);
       if (response.status === 200) {
         setUserData((prevData) => ({
           ...prevData,
-          isBlocked: !prevData.isBlocked, // Toggle block status
+          isBlocked: !prevData.isBlocked, // Đảo trạng thái chặn
         }));
       }
     } catch (err) {
-      console.error("Error blocking user:", err);
+      console.error("Lỗi khi chặn người dùng:", err);
     }
   };
 
-  // Handle "Quay lại" button click
+  // Xử lý nút quay lại
   const handleGoBack = () => {
-    navigate(-1); // Điều hướng trở lại trang trước
+    navigate(-1);
   };
 
   if (loading) return <p>Đang tải thông tin người dùng...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="user-profile-container p-6 bg-white rounded-lg shadow-md">
+    <div className="user-profile-container max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
+      {/* Nút quay lại */}
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={handleGoBack}
@@ -61,16 +61,19 @@ const UserProfile = () => {
         </button>
       </div>
 
+      {/* Phần hiển thị avatar và thông tin cơ bản */}
       <div className="profile-header flex flex-col items-center gap-4 p-4">
         <div className="relative">
           <img
-            src={userData.profilePic || "/avatar.jpg"} // Avatar người dùng
+            src={userData.profilePic || "/avatar.jpg"}
             alt={`${userData.username}'s Avatar`}
             className="w-32 h-32 rounded-full object-cover border-4 border-zinc-300"
           />
+          <Camera className="absolute bottom-0 right-0 p-1 bg-white rounded-full border border-gray-300 cursor-pointer" />
         </div>
       </div>
 
+      {/* Thông tin người dùng */}
       <div className="profile-info text-center mb-6">
         <h1 className="username text-2xl font-bold text-blue-600">
           {userData.username}
@@ -85,6 +88,7 @@ const UserProfile = () => {
         </p>
       </div>
 
+      {/* Thông tin số người theo dõi và đang theo dõi */}
       <div className="follow-status mb-6">
         <hr className="mb-4" />
         <div className="flex justify-around">
@@ -103,6 +107,7 @@ const UserProfile = () => {
         </div>
       </div>
 
+      {/* Nút chặn / bỏ chặn người dùng */}
       <div className="block-section mb-6 text-center">
         <button
           className={`btn ${

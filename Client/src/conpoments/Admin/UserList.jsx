@@ -125,6 +125,7 @@ const UserList = () => {
               <th>Username</th>
               <th>Email</th>
               <th>Trạng Thái</th>
+              <th>Xác thực</th>
               <th>Hành Động</th>
             </tr>
           </thead>
@@ -133,7 +134,7 @@ const UserList = () => {
               <tr key={user._id} className={user.isBlocked ? "blocked" : ""}>
                 <td>
                   <img
-                    src={user.profilePic || "https://via.placeholder.com/50"}
+                    src={user.profilePic || "/avatar.jpg"}
                     alt={`${user.username}'s avatar`}
                     className="avatar"
                   />
@@ -156,6 +157,13 @@ const UserList = () => {
                     <span className="status blocked">Bị chặn</span>
                   ) : (
                     <span className="status active">Đang hoạt động</span>
+                  )}
+                </td>
+                <td>
+                  {user.isVerified ? (
+                    <span className="status active">Đã xác thực</span>
+                  ) : (
+                    <span className="status blocked">Chưa xác thực</span>
                   )}
                 </td>
                 <td>

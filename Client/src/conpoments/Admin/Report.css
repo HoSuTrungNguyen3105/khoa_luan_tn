@@ -41,3 +41,134 @@
 .chart-container {
   margin-top: 20px;
 }
+/* Container for the entire page */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Sidebar styling */
+.col-md-3 {
+  width: 25%; /* Cho phép sidebar chiếm 25% chiều rộng */
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.col-md-3 h1 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.list-group-item {
+  font-size: 16px;
+  padding: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.list-group-item.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.list-group-item:hover {
+  background-color: #e9ecef;
+}
+
+.list-group {
+  list-style-type: none;
+  padding: 0;
+}
+
+.list-group-item i {
+  margin-right: 10px;
+}
+
+/* Main content styling */
+.col-md-9 {
+  width: 75%; /* Phần nội dung chiếm 75% chiều rộng */
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 5px;
+}
+
+/* Adjustments for responsiveness */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Hiển thị dạng cột trên màn hình nhỏ */
+  }
+
+  .col-md-3,
+  .col-md-9 {
+    width: 100%;
+    padding: 10px;
+  }
+}
+
+/* Form group styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* Button styling */
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 8px 15px;
+  border-radius: 5px;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Checkbox and Switch */
+.form-check-label {
+  font-size: 16px;
+}
+
+.form-check-input {
+  margin-right: 10px;
+}
+
+small {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+/* Dropdown select styling */
+select.form-control {
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+/* Spacing between sections */
+.mt-5 {
+  margin-top: 30px;
+}
+
+/* Specific section for the language selector */
+h5 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 20px;
+  color: #333;
+}
+
+/* Styling for the Privacy section */
+.form-check {
+  margin-top: 10px;
+}
