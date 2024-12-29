@@ -7,14 +7,12 @@ import cookieParser from "cookie-parser";
 // Import Routes
 import AdminRoute from "./Routes/AdminRoute.js";
 import AuthRoute from "./Routes/AuthRoute.js";
-import FBRoute from "./Routes/FBRoute.js";
 import UserRoute from "./Routes/UserRoute.js";
 import PostRoute from "./Routes/PostRoute.js";
 import AdvRoute from "./Routes/AdvRoute.js";
 import MessageRoute from "./Routes/MessageRoute.js";
 import { app, server } from "./lib/socket.js";
 import config from "./lib/config.js";
-import passport from "passport";
 import session from "express-session";
 app.use(
   cors({
@@ -33,14 +31,7 @@ app.use(
 app.use(cookieParser());
 app.use(bodyparser.json({ limit: "20mb", extended: true }));
 app.use(bodyparser.urlencoded({ limit: "20mb", extended: true }));
-app.use(passport.initialize());
-app.use(passport.session());
-passport.serializeUser(function (user, cb) {
-  cb(null, user);
-});
-passport.deserializeUser(function (obj, cb) {
-  cb(null, obj);
-});
+
 dotenv.config();
 
 mongoose
@@ -59,4 +50,3 @@ app.use("/api/user", UserRoute);
 app.use("/api/post", PostRoute);
 app.use("/api/message", MessageRoute);
 app.use("/api/adv", AdvRoute);
-app.use("/api/auth/facebook", FBRoute);
