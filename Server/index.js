@@ -14,6 +14,7 @@ import MessageRoute from "./Routes/MessageRoute.js";
 import { app, server } from "./lib/socket.js";
 import config from "./lib/config.js";
 import session from "express-session";
+const port = process.env.PORT || 5001;
 app.use(
   cors({
     origin: config.baseUrl, // Lấy giá trị từ cấu hình
@@ -39,7 +40,7 @@ mongoose
     "mongodb+srv://lostnfound:k2HOMRjQjlQ4zr5t@cluster0.sxv75.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then(() => {
-    server.listen(5001, () => {
+    server.listen(port, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
   });
