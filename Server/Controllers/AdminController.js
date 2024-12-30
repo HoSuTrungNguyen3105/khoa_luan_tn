@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import UserModel from "../Models/userModel.js";
 import { generateToken } from "../lib/utils.js";
 import PostModel from "../Models/postModel.js";
