@@ -3,8 +3,6 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
-const BASE_URL = "http://localhost:5001";
-
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   setAuthUser: (user) => set({ authUser: user }), // Hàm cập nhật authUser

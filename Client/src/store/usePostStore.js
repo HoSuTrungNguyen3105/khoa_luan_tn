@@ -4,16 +4,6 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 export const usePostStore = create((set, get) => ({
-  // posts: [], // Lưu danh sách bài đăng
-  // post: null, // A single post
-  // provinces: [],
-  // isCreating: false, // Trạng thái đang tạo bài viết
-  // createPostError: null,
-  // createPostSuccess: false,
-  // approvedPosts: [],
-  // pendingPosts: [],
-  // isLoading: false, // Trạng thái đang tải
-  // error: null, // Lưu thông báo lỗi nếu có
   posts: [], // Lưu danh sách bài đăng
   post: null, // A single post
   provinces: [],
@@ -199,28 +189,6 @@ export const usePostStore = create((set, get) => ({
     }
   },
 
-  // deletePost: async (postId) => {
-  //   const token = localStorage.getItem("token"); // Đảm bảo bạn lấy token từ đúng nơi lưu trữ
-
-  //   if (!token) {
-  //     console.error("Token không có trong localStorage");
-  //     return; // Nếu không có token thì dừng việc xóa bài
-  //   }
-
-  //   try {
-  //     await axios.delete(`http://localhost:5001/api/post/posts/${postId}`, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`, // Đảm bảo gửi token đúng header
-  //       },
-  //     });
-  //     console.log("Post deleted successfully!");
-  //   } catch (error) {
-  //     console.error(
-  //       "Error deleting post:",
-  //       error.response?.data?.message || error.message
-  //     );
-  //   }
-  // },
   // Action to update the post
   updatePost: async (updatedPost) => {
     set({ isLoading: true, error: null });
