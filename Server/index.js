@@ -17,7 +17,7 @@ import MessageRoute from "./Routes/MessageRoute.js";
 import { app, server } from "./lib/socket.js";
 import config from "./lib/config.js";
 
-const port = process.env.PORT || process.env.VERCEL_URL ? 10000 : 5001;
+const port = process.env.PORT || 5001;
 const MONGODB_URI =
   "mongodb+srv://lostnfound:k2HOMRjQjlQ4zr5t@cluster0.sxv75.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
@@ -59,7 +59,6 @@ dotenv.config();
 mongoose.connect(MONGODB_URI).then(() => {
   server.listen(port, () => {
     console.log(`Server đang chạy trên cổng ${port}`);
-    console.log(`Môi trường: ${process.env.NODE_ENV || "development"}`);
   });
 });
 
