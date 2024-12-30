@@ -26,7 +26,7 @@ app.use(
   session({
     resave: false,
     saveUninitialized: true,
-    secret: process.env.SESSION_SECRET,
+    secret: "56748390657848848448484747336363363636363363636",
     cookie: { secure: false }, // Đặt thành true nếu dùng HTTPS
   })
 );

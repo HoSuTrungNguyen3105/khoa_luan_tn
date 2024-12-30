@@ -325,35 +325,6 @@ export const search = async (req, res) => {
   }
 };
 
-// export const getAllPosts = async (req, res) => {
-//   try {
-//     // Truy vấn các bài đăng và sử dụng populate để lấy dữ liệu userId
-//     const posts = await PostModel.find()
-//       .sort({ createdAt: -1 })
-//       .populate({
-//         path: "userId", // Tên của trường cần populate
-//         select: "username _id", // Lấy username và _id từ UserModel
-//         match: { _id: { $type: "objectId" } }, // Đảm bảo rằng _id là ObjectId hợp lệ
-//       });
-//     if (posts.length === 0) {
-//       return res.status(404).json({ message: "No posts found" });
-//     }
-
-//     // Tạo một mảng mới với số lượng báo cáo được thêm vào mỗi bài đăng
-//     const postsWithReportCount = posts.map((post) => ({
-//       ...post.toObject(),
-//       reportsCount: post.reports.length, // Đếm số lượng báo cáo
-//     }));
-
-//     return res.json({
-//       status: "Success",
-//       data: postsWithReportCount, // Trả về danh sách bài đăng với thông tin báo cáo
-//     });
-//   } catch (error) {
-//     console.log("Error:", error);
-//     res.status(500).json({ message: "Error retrieving posts" });
-//   }
-// };
 export const getAllPosts = async (req, res) => {
   try {
     const posts = await PostModel.find()
@@ -380,26 +351,6 @@ export const getAllPosts = async (req, res) => {
 };
 
 export const getPostApprove = async (req, res) => {
-  // try {
-  //   // Lọc bài viết có isApproved: false và sắp xếp theo createdAt mới nhất
-  //   const posts = await PostModel.find({ isApproved: false }).sort({
-  //     createdAt: -1,
-  //   });
-
-  //   console.log("Filtered Posts found:", posts); // Log để kiểm tra dữ liệu
-
-  //   if (posts.length === 0) {
-  //     return res.status(404).json({ message: "No posts found" });
-  //   }
-
-  //   return res.json({
-  //     status: "Success",
-  //     data: posts,
-  //   });
-  // } catch (error) {
-  //   console.log("Error:", error);
-  //   res.status(500).json({ message: "Error retrieving posts" });
-  // }
   try {
     const posts = await PostModel.find().sort({ createdAt: -1 });
 
