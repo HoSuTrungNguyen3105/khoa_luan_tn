@@ -7,7 +7,6 @@ import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 import messageModel from "../Models/messageModel.js";
 import nodemailer from "nodemailer";
-import config from "../lib/config.js";
 
 export const dataRoute = async (req, res) => {
   const { role } = req.query;
@@ -258,7 +257,7 @@ export const forgetPassword = async (req, res) => {
       subject: "Gửi token để đặt lại mã",
       html: `
         <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu của bạn. Để thay đổi mật khẩu, vui lòng bấm vào nút dưới đây:</p>
-        <a href="${config.baseUrl}/reset-password/${token}" 
+        <a href="${FRONTEND_URL}/reset-password/${token}" 
            style="display:inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">
            Bấm vào để thay đổi mật khẩu
         </a>
