@@ -9,7 +9,7 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
-      FRONTEND_URL, // Lấy giá trị từ cấu hình
+      process.env.FRONTEND_URL, // Lấy giá trị từ cấu hình
       ,
     ],
     methods: ["GET", "POST"],
