@@ -13,7 +13,7 @@ import AdvRoute from "./Routes/AdvRoute.js";
 import MessageRoute from "./Routes/MessageRoute.js";
 import { app, server } from "./lib/socket.js";
 import mongoose from "mongoose";
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(
   cors({
