@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "./PostShare.css";
 import { usePostStore } from "../../store/usePostStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -12,20 +12,42 @@ const PostShare = ({ onPostCreateSuccess }) => {
   const fileInputRef = useRef();
   const [hovered, setHovered] = useState(null); // Để theo dõi nút đang hover
 
-  const [setError] = useState("");
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     userId: authUser?._id || "",
     username: authUser?.username || "",
     desc: "",
     contact: "",
     location: "",
-    image: null,
+    image: [],
   });
 
   const [postType, setPostType] = useState(""); // State để lưu loại bài đăng
   const [provinces, setProvinces] = useState([]);
   const [loadingProvinces, setLoadingProvinces] = useState(true);
-
+  const handleImageChange = useCallback((e) => {
+    const files = Array.from(e.target.files);
+    Promise.all(
+      files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      })
+    ).then((image) => {
+      setFormData((prev) => ({
+        ...prev,
+        image: [...prev.image, ...image],
+      }));
+    });
+  }, []);
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      image: prevState.image.filter((_, index) => index !== indexToRemove),
+    }));
+  };
   useEffect(() => {
     axios
       .get("http://localhost:5001/api/post/provinces")
@@ -47,19 +69,21 @@ const PostShare = ({ onPostCreateSuccess }) => {
     setFormData({ ...formData, location: e.target.value });
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // const handleImageChange = (e) => {
+  //   const file = e.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onloadend = () => {
+  //       setFormData({ ...formData, image: reader.result });
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const postData = { ...formData };
+
     setError("");
     try {
       const success = await createPost({ ...formData, postType });
@@ -70,7 +94,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
           desc: "",
           contact: "",
           location: "",
-          image: null,
+          image: [],
         });
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -190,16 +214,34 @@ const PostShare = ({ onPostCreateSuccess }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Chọn ảnh *
-            </label>
+            <label className="block text-sm font-semibold">Chọn ảnh *</label>
             <input
               type="file"
               name="image"
               accept="image/*"
+              ref={fileInputRef}
               onChange={handleImageChange}
-              className="input input-bordered w-full p-3 rounded-md"
+              className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              multiple
             />
+            <div className="mt-4 flex flex-wrap gap-4">
+              {formData.image.map((images, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={images}
+                    alt={`selected-image-${index}`}
+                    className="w-24 h-24 object-cover rounded-lg shadow-md border-2 border-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <button

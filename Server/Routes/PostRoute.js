@@ -17,10 +17,11 @@ import {
   getPostApprove,
 } from "../Controllers/PostController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
+import { uploadMiddleware } from "../lib/multer.js";
 
 const router = express.Router();
 
-router.post("/posts", createPost); // Để tạo bài viết
+router.post("/posts", uploadMiddleware, createPost); // Để tạo bài viết
 router.get("/posts/:id", getPost); // Để lấy một bài viết theo id
 router.get("/posts/user/:id", getPostToProfile); // Để lấy một bài viết theo id
 router.put("/update/:id", protectRoute, updatePost);

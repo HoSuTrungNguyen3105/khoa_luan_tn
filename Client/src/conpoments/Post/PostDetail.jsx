@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation, useParams } from "react-router-dom";
-
-import { Helmet } from "react-helmet"; // Import React Helmet
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, useLocation, useParams, Link } from "react-router-dom";
 import { usePostStore } from "../../store/usePostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useFollowStore } from "../../store/useFollowStore";
 import "./PostDetail.css";
 import FacebookShareButton from "./FacebookShareButton";
-import config from "../../lib/config";
+import { Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 
 const PostDetail = () => {
@@ -29,12 +27,20 @@ const PostDetail = () => {
     desc: "",
     contact: "",
     location: "",
-    image: "",
+    image: [],
   });
-  const { provinces, fetchProvinces, reportPost } = usePostStore();
-
+  const { provinces, fetchProvinces } = usePostStore();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+
+  const breadcrumbs = useMemo(() => {
+    return [
+      { name: "Home", path: "/" },
+      { name: "Bài viết", path: "/post" },
+      { name: post?.title || "Post", path: `/post/${id}` },
+    ];
+  }, [post, id]);
   // Lấy danh sách tỉnh thành nếu chưa tải
   useEffect(() => {
     if (provinces.length === 0) fetchProvinces();
@@ -151,7 +157,17 @@ const PostDetail = () => {
       }
     }
   };
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : post?.image?.length - 1
+    );
+  };
 
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex < post?.image?.length - 1 ? prevIndex + 1 : 0
+    );
+  };
   useEffect(() => {
     const script = document.createElement("script");
     script.src =
@@ -165,22 +181,19 @@ const PostDetail = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!post) return <div>Post not found!</div>;
-  const postUrl = `${config.baseUrl}/post/${id}`;
+  // const postUrl = `${config.baseUrl}/post/${id}`;
 
   return (
     <div className="post-detail">
-      {/* Thêm thẻ meta Open Graph */}
-      <Helmet>
-        {/* Remove title meta tag to prevent displaying "React App" */}
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content={post.image || "/avatar.jpg"} />
-        <meta property="og:url" content={postUrl} />
-        {/* Add noindex to prevent search engines from indexing the ngrok URL */}
-        <meta name="robots" content="noindex" />
-        {/* Force Facebook to use a blank title */}
-        <meta property="og:title" content=" " />
-        <meta property="og:description" content=" " />
-      </Helmet>
+      {/* Breadcrumb */}
+      <nav>
+        {breadcrumbs.map((crumb, index) => (
+          <span key={index}>
+            <Link to={crumb.path}>{crumb.name}</Link>
+            {index < breadcrumbs.length - 1 && " › "}
+          </span>
+        ))}
+      </nav>
 
       <div className="post-header">
         {user && (
@@ -232,9 +245,37 @@ const PostDetail = () => {
       ) : (
         <div className="post-info">
           <p className="post-description">{post.desc}</p>
-          {post.image && (
-            <img src={post.image} alt="Post" className="post-image" />
-          )}
+          <div className="relative aspect-square">
+            <img
+              src={
+                post.image[currentImageIndex] ||
+                "https://cdn-icons-png.freepik.com/256/15058/15058095.png?semt=ais_hybrid"
+              }
+              alt="Product"
+              className="w-full h-full object-contain rounded-lg"
+            />
+
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            <div className="absolute top-4 right-4 flex gap-2">
+              <button className="bg-white/80 p-2 rounded-full">
+                <Share2 className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+              {currentImageIndex + 1} / {post.image.length}
+            </div>
+          </div>
           <p className="post-contact">
             <button className="contact-button">
               Liên lạc qua số : {post.contact}

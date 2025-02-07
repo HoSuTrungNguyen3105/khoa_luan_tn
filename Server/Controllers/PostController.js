@@ -22,7 +22,11 @@ export const createPost = async (req, res) => {
         .status(400)
         .json({ message: "Image bị thiếu", field: "image" });
     }
-
+    if (!Array.isArray(image) || image.some((img) => typeof img !== "string")) {
+      return res
+        .status(400)
+        .json({ message: "Dữ liệu ảnh không hợp lệ", field: "images" });
+    }
     // Làm sạch nội dung mô tả
     const cleanedDesc = desc
       .replace(/\s+/g, " ") // Thay tất cả khoảng trắng dư thừa thành một khoảng trắng duy nhất
@@ -50,7 +54,7 @@ export const createPost = async (req, res) => {
       userId,
       username: user.username,
       desc,
-      image: JSON.stringify(imageUrls), // Lưu mảng các URL ảnh dưới dạng JSON
+      image: imageUrls, // Lưu mảng các URL ảnh dưới dạng JSON
       category: req.body.category,
       location,
       contact,

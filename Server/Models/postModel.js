@@ -12,8 +12,8 @@ const postSchema = mongoose.Schema(
       default: "", // Không bắt buộc, có giá trị mặc định
     },
     image: {
-      type: String,
-      default: "",
+      type: [String],
+      default: [],
     },
     isLost: {
       type: Boolean,
