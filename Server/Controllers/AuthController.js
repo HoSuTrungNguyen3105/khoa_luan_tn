@@ -81,94 +81,39 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { email, password, isAdminLogin, facebookAccessToken } = req.body;
+  const { email, password, isAdminLogin } = req.body;
 
   try {
-    if (!email && !facebookAccessToken) {
+    // Kiểm tra nếu thiếu thông tin đầu vào
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Vui lòng nhập email/mật khẩu hoặc token Facebook!",
+        message: "Vui lòng nhập đầy đủ thông tin tài khoản và mật khẩu!",
       });
     }
 
-    let user;
+    // Tìm kiếm người dùng trong cơ sở dữ liệu
+    const user = await UserModel.findOne({ email });
 
-    // Xử lý đăng nhập bằng Facebook
-    if (facebookAccessToken) {
-      const fbUser = await verifyFacebookAccessToken(facebookAccessToken);
-      if (!fbUser) {
-        return res
-          .status(400)
-          .json({ message: "Token Facebook không hợp lệ!" });
-      }
+    // Kiểm tra nếu tài khoản không tồn tại
+    if (!user) {
+      return res.status(400).json({ message: "Tài khoản chưa đăng ký!" });
+    }
 
-      user = await UserModel.findOne({ email: fbUser.email });
-
-      if (!user) {
-        user = new UserModel({
-          email: fbUser.email,
-          name: fbUser.name,
-          role: "user",
-          isVerified: true,
-        });
-        await user.save();
-      }
-    } else {
-      if (!password) {
-        return res.status(400).json({
-          message: "Vui lòng nhập mật khẩu!",
-        });
-      }
-
-      user = await UserModel.findOne({ email });
-
-      // Kiểm tra tài khoản có tồn tại không
-      if (!user) {
-        return res.status(400).json({ message: "Tài khoản chưa đăng ký!" });
-      }
-
-      // Kiểm tra trạng thái bị khóa
-      if (user.isBlocked) {
-        const now = new Date();
-        if (user.blockExpires && now < user.blockExpires) {
-          const remainingMinutes = Math.ceil((user.blockExpires - now) / 60000);
-          return res.status(403).json({
-            message: `Tài khoản của bạn đã bị khóa. Vui lòng thử lại sau ${remainingMinutes} phút.`,
-          });
-        } else {
-          // Mở khóa tài khoản nếu hết thời gian khóa
-          user.isBlocked = false;
-          user.loginAttempts = 0;
-          user.blockExpires = null;
-          await user.save();
-        }
-      }
-
-      // Kiểm tra mật khẩu
-      const isPasswordCorrect = await bcrypt.compare(password, user.password);
-      if (!isPasswordCorrect) {
-        user.loginAttempts += 1;
-
-        // Khóa tài khoản sau 3 lần nhập sai
-        if (user.loginAttempts >= 3) {
-          user.isBlocked = true;
-          user.blockExpires = new Date(Date.now() + 15 * 60 * 1000); // Khóa trong 15 phút
-        }
-
-        await user.save();
-        return res.status(400).json({
-          message: `Sai mật khẩu! Bạn đã nhập sai ${user.loginAttempts} lần.`,
-        });
-      }
+    // Kiểm tra trạng thái bị block
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Tài khoản của bạn đã bị khóa" });
     }
 
     // Kiểm tra vai trò đăng nhập
     if (isAdminLogin) {
+      // Yêu cầu vai trò admin
       if (user.role !== "admin") {
         return res.status(403).json({
           message: "Bạn không có quyền truy cập Admin hoặc không phải Admin.",
         });
       }
     } else {
+      // Người dùng không phải admin không thể đăng nhập qua admin-login
       if (user.role === "admin") {
         return res.status(403).json({
           message: "Vui lòng truy cập trang đăng nhập Admin để đăng nhập.",
@@ -176,11 +121,11 @@ export const loginUser = async (req, res) => {
       }
     }
 
-    // Reset số lần đăng nhập sai nếu thành công
-    user.loginAttempts = 0;
-    user.isBlocked = false;
-    user.blockExpires = null;
-    await user.save();
+    // Kiểm tra mật khẩu
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "Sai mật khẩu" });
+    }
 
     // Tạo token đăng nhập và trả về thông tin người dùng
     generateToken(user._id, res);
@@ -190,26 +135,6 @@ export const loginUser = async (req, res) => {
     res
       .status(500)
       .json({ message: "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
-  }
-};
-
-// Hàm xác thực token Facebook
-const verifyFacebookAccessToken = async (accessToken) => {
-  try {
-    const response = await fetch(
-      `https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`
-    );
-    const data = await response.json();
-
-    if (data.error) {
-      console.error("Facebook token verification error:", data.error);
-      return null;
-    }
-
-    return data; // Trả về thông tin người dùng từ Facebook
-  } catch (error) {
-    console.error("Error verifying Facebook access token:", error.message);
-    return null;
   }
 };
 

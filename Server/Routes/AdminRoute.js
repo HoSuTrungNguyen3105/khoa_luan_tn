@@ -12,8 +12,6 @@ import {
   getPendingPosts,
   getReportsByUser,
   getUserById,
-  loginAdmin,
-  logoutAdmin,
   reportNoti,
 } from "../Controllers/AdminController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
@@ -21,8 +19,6 @@ import { checkAuth, checkUserStatus } from "../lib/checkAuth.js";
 import { getLostItemsCount } from "../Controllers/PostController.js";
 const router = express.Router();
 
-router.post("/login", loginAdmin);
-router.post("/logout", logoutAdmin);
 router.post("/approve/:id", approvePost);
 router.get("/notifications", reportNoti);
 router.get("/getReportsByUser/:userId", getReportsByUser);
