@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "../../lib/axios";
-import { useAuthStore } from "../../store/useAuthStore";
 import "./UserList.css"; // Thêm nếu cần style
+import { useAdminStore } from "../../store/useAdminStore";
 
 const UserList = () => {
   const [users, setUsers] = useState([]); // Dữ liệu người dùng
@@ -10,8 +9,7 @@ const UserList = () => {
   const [isLoading, setIsLoading] = useState(true); // Trạng thái tải
   const [error, setError] = useState(null); // Trạng thái lỗi
   const [reportCounts, setReportCounts] = useState({}); // Số lần báo cáo của người dùng
-  const { authUser } = useAuthStore(); // Lấy thông tin người dùng đã đăng nhập
-  const navigate = useNavigate();
+  const { deleteUser } = useAdminStore(); // Lấy thông tin người dùng đã đăng nhập
 
   // Gọi API để lấy danh sách người dùng
   useEffect(() => {
@@ -41,10 +39,10 @@ const UserList = () => {
           `/admin/getReportsByUser/${user._id}`
         );
         // Log the report count response for debugging
-        console.log(
-          `Report count for ${user.username}:`,
-          response.data.reportCount
-        );
+        // console.log(
+        //   `Report count for ${user.username}:`,
+        //   response.data.reportCount
+        // );
         // Ensure the response contains a valid report count
         counts[user._id] = response.data.reportCount || 0;
       } catch (err) {
@@ -174,6 +172,12 @@ const UserList = () => {
                     onClick={() => handleBlockToggle(user._id)}
                   >
                     {user.isBlocked ? "Unblock" : "Block"}
+                  </button>
+                  <button
+                    className="btn bg-black"
+                    onClick={() => deleteUser(user._id, setUsers)}
+                  >
+                    🗑️ Xóa
                   </button>
                 </td>
               </tr>

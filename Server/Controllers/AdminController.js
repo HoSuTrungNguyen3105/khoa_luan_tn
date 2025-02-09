@@ -254,6 +254,32 @@ export const allchatUser = async (req, res) => {
     });
   }
 };
+export const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Kiểm tra nếu không có `req.user` hoặc `req.user.role` không phải admin
+    if (!req.user || req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to delete users" });
+    }
+
+    const result = await UserModel.deleteOne({ _id: id });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal Server Error", error: error.message });
+    console.error(error);
+  }
+};
+
 export const getAllMessages = async (req, res) => {
   try {
     const messages = await messageModel
