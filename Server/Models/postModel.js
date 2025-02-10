@@ -36,6 +36,30 @@ const postSchema = mongoose.Schema(
       ],
       default: [], // Thêm giá trị mặc định là mảng rỗng
     },
+    status: {
+      type: String,
+      enum: ["active", "archived", "deleted"],
+      default: "active",
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+
+    isPromoted: {
+      type: Boolean,
+      default: false,
+    },
+    // Bổ sung các fields động theo từng danh mục
+    customFields: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}, // Dữ liệu động cho từng danh mục
+    },
     contact: {
       type: String,
       validate: {

@@ -35,6 +35,10 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    favoritesCount: {
+      type: Number,
+      default: 0,
+    },
     followers: [],
     following: [],
     isBlocked: {

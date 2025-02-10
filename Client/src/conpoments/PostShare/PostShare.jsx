@@ -5,6 +5,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { FaCheckCircle } from "react-icons/fa"; // Thêm icon
+import { axiosInstance } from "../../lib/axios";
 
 const PostShare = ({ onPostCreateSuccess }) => {
   const { authUser } = useAuthStore();
@@ -49,8 +50,8 @@ const PostShare = ({ onPostCreateSuccess }) => {
     }));
   };
   useEffect(() => {
-    axios
-      .get("http://localhost:5001/api/post/provinces")
+    axiosInstance
+      .get("/post/provinces")
       .then((response) => {
         setProvinces(response.data);
         setLoadingProvinces(false);
@@ -69,24 +70,16 @@ const PostShare = ({ onPostCreateSuccess }) => {
     setFormData({ ...formData, location: e.target.value });
   };
 
-  // const handleImageChange = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setFormData({ ...formData, image: reader.result });
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const postData = { ...formData };
-
     setError("");
+    const updatedFormData = {
+      ...formData,
+      isLost: postType === "isLost",
+      isFound: postType === "isFound",
+    };
     try {
-      const success = await createPost({ ...formData, postType });
+      const success = await createPost(updatedFormData);
       if (success) {
         setFormData({
           userId: authUser?._id || "",
@@ -95,6 +88,8 @@ const PostShare = ({ onPostCreateSuccess }) => {
           contact: "",
           location: "",
           image: [],
+          isLost: false,
+          isFound: false,
         });
         if (fileInputRef.current) {
           fileInputRef.current.value = "";

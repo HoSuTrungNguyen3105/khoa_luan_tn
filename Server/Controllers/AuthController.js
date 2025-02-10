@@ -391,16 +391,49 @@ export const updateUserInfo = async (req, res) => {
     const { username, firstname, lastname, email } = req.body;
     const userId = req.user._id;
 
-    // Cập nhật các thông tin người dùng (không có ảnh)
+    // Kiểm tra xem có ít nhất một trường cần cập nhật không
+    if (!username && !firstname && !lastname && !email) {
+      return res.status(400).json({ message: "Không có dữ liệu để cập nhật" });
+    }
+
+    // Kiểm tra định dạng email
+    if (email) {
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Email không đúng định dạng" });
+      }
+
+      // Kiểm tra xem email đã được sử dụng bởi user khác chưa
+      const existingEmailUser = await UserModel.findOne({
+        email,
+        _id: { $ne: userId },
+      });
+      if (existingEmailUser) {
+        return res.status(400).json({ message: "Email này đã được sử dụng" });
+      }
+    }
+
+    // Cập nhật thông tin user
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
       { username, firstname, lastname, email },
-      { new: true }
+      {
+        new: true,
+        runValidators: true,
+        select: "username firstname lastname email",
+      } // Chỉ trả về các trường cần thiết
     );
 
-    res.status(200).json(updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    res.status(200).json({
+      message: "Cập nhật thông tin thành công",
+      user: updatedUser,
+    });
   } catch (error) {
-    console.log("error in update user info:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Lỗi cập nhật thông tin người dùng:", error);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại sau" });
   }
 };

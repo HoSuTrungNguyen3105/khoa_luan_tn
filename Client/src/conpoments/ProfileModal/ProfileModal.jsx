@@ -5,7 +5,8 @@ import "./ProfileModal.css";
 
 function ProfileModal({ modalOpened, setModalOpened, userData }) {
   const theme = useMantineTheme();
-  const { updateProfileInfo, isUpdatingProfile, errorMessage } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
+  const { updateProfileInfo, isUpdatingProfile } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
+  const [error, setError] = useState(""); // State để lưu lỗi
 
   // State để lưu dữ liệu từ form, bắt đầu từ thông tin người dùng hiện tại
   const [formData, setFormData] = useState({
@@ -24,13 +25,22 @@ function ProfileModal({ modalOpened, setModalOpened, userData }) {
   // Hàm xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(""); // Reset lỗi trước khi gửi
 
     try {
-      // Gọi updateProfile từ zustand để gửi dữ liệu lên server
-      await updateProfileInfo(formData);
-      setModalOpened(false); // Đóng modal sau khi cập nhật thành công
+      // Gọi hàm cập nhật và kiểm tra kết quả
+      const result = await updateProfileInfo(formData);
+
+      if (result.success) {
+        setModalOpened(false); // Chỉ đóng modal nếu cập nhật thành công
+      } else {
+        setError(result.message || "Cập nhật thất bại! Vui lòng thử lại.");
+      }
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
+      setError(
+        error.response?.data?.message || "Cập nhật thất bại! Vui lòng thử lại."
+      );
     }
   };
 
@@ -121,7 +131,7 @@ function ProfileModal({ modalOpened, setModalOpened, userData }) {
           {isUpdatingProfile ? "Đang cập nhật..." : "Cập nhật"}
         </button>
         {/* Hiển thị lỗi nếu có */}
-        {errorMessage && <div className="errorMessage">{errorMessage}</div>}
+        {error && <div className="errorMessage">{error}</div>}
       </form>
     </Modal>
   );

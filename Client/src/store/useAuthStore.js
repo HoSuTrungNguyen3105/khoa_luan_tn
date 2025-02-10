@@ -183,6 +183,19 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       set((state) => ({ authUser: { ...state.authUser, ...data } })); // Rollback nếu lỗi
       // Xử lý lỗi
+      set({ isUpdatingProfile: false });
+
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.message || "Đã xảy ra lỗi khi cập nhật!";
+        console.error("Error in updateProfile:", errorMessage);
+        toast.error(errorMessage);
+      } else {
+        // Xử lý lỗi không có response (lỗi mạng hoặc khác)
+        console.error("Error in updateProfile:", error.message);
+        toast.error("Không thể kết nối với máy chủ. Vui lòng thử lại sau.");
+      }
+      return false; // Trả về false nếu có lỗi
     } finally {
       set({ isUpdatingProfile: false });
     }

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./Post.css";
-import Comment from "../../img/comment.png";
-import Share from "../../img/share.png";
 import { useFollowStore } from "../../store/useFollowStore";
 import { usePostStore } from "../../store/usePostStore";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
 
 const Post = ({ data, currentUserId }) => {
   const {
@@ -166,23 +163,32 @@ const Post = ({ data, currentUserId }) => {
               X
             </button>
           )}
+          {Array.isArray(data.image) && data.image.length > 0 ? (
+            <Link to={`/post/${data._id}?userId=${userId}`}>
+              <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-lg aspect-[4/4]">
+                {/* Blurred background image */}
+                <div
+                  className="absolute inset-0 bg-cover bg-center blur-md scale-110"
+                  style={{ backgroundImage: `url(${data.image[0]})` }}
+                ></div>
 
-          <Link to={`/post/${data._id}?userId=${userId}`}>
-            <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-lg aspect-[4/4]">
-              {/* Blurred background image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center blur-md scale-110"
-                style={{ backgroundImage: `url(${data.image})` }}
-              ></div>
-
-              {/* Main image */}
+                {/* Main image */}
+                <img
+                  src={data.image[0]}
+                  alt="post"
+                  className="relative w-full h-full object-contain z-10"
+                />
+              </div>
+            </Link>
+          ) : (
+            <Link to={`/post/${data._id}?userId=${userId}`}>
               <img
-                src={data.image}
-                alt="post"
+                src="https://cdn-icons-png.freepik.com/256/15058/15058095.png?semt=ais_hybrid"
+                alt="Hình ảnh mặc định"
                 className="relative w-full h-full object-contain z-10"
               />
-            </div>
-          </Link>
+            </Link>
+          )}
         </div>
       )}
 
