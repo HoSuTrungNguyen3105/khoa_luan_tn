@@ -1,3 +1,5 @@
+import cloudinary from "../lib/cloudinary.js";
+import ContractModel from "../Models/contractModel.js";
 import Notification from "../Models/notificationModel.js";
 import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
@@ -207,6 +209,70 @@ export const searchPost = async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: "Lỗi khi tìm kiếm bài đăng" });
   }
+};
+export const rewardPoint = async (req, res) => {
+  const { userId, points } = req.body;
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) return res.status(404).json({ message: "User không tồn tại" });
+
+    user.points += points;
+    await user.save();
+
+    res.json({ message: "Cộng điểm thành công!", points: user.points });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
+export const contract = async (req, res) => {
+  try {
+    const { finderId, loserId, images } = req.body;
+
+    // Kiểm tra xem finderId và loserId có hợp lệ không
+    const finder = await UserModel.findById(finderId);
+    const loser = await UserModel.findById(loserId);
+
+    if (!finder || !loser) {
+      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    }
+
+    // Tạo hợp đồng mới
+    const newContract = new ContractModel({
+      finder: finderId,
+      loser: loserId,
+      image: images || [],
+      status: "pending",
+    });
+
+    // Lưu hợp đồng vào database
+    await newContract.save();
+
+    res.status(201).json({
+      status: "Success",
+      message: "Hợp đồng đã được tạo.",
+      data: newContract,
+    });
+  } catch (error) {
+    console.error("Lỗi khi tạo hợp đồng:", error);
+    res.status(500).json({ message: "Lỗi khi tạo hợp đồng." });
+  }
+};
+const handleImageUpload = async (images) => {
+  const imageUrls = [];
+
+  for (let i = 0; i < images.length; i++) {
+    try {
+      const uploadResponse = await cloudinary.uploader.upload(images[i], {
+        resource_type: "auto", // Tự động nhận dạng loại tệp
+      });
+      imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
+    } catch (error) {
+      console.error("Lỗi khi upload ảnh:", error);
+      throw new Error("Có lỗi xảy ra khi upload ảnh");
+    }
+  }
+
+  return imageUrls;
 };
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;

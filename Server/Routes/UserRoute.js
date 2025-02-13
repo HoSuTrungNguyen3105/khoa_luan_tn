@@ -1,11 +1,13 @@
 import express from "express";
 import {
   changePassword,
+  contract,
   deleteUser,
   fetchFollowingStatus,
   followUser,
   getNotifications,
   getUserProfile,
+  rewardPoint,
   searchPost,
   searchUser,
   unfollowUser,
@@ -22,5 +24,6 @@ router.put("/:id/follow", followUser);
 router.put("/:id/unfollow", unfollowUser);
 router.get("/:targetUserId/is-following", fetchFollowingStatus);
 router.post("/change-password", protectRoute, changePassword);
-
+router.post("/reward-points", rewardPoint);
+router.post("/contraction", contract);
 export default router;

@@ -7,13 +7,21 @@ import "./PostDetail.css";
 import FacebookShareButton from "./FacebookShareButton";
 import { Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { axiosInstance } from "../../lib/axios";
 
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation(); // Lấy query string từ URL
-  const { getPostById, post, isLoading, error, updatePost, deletePost } =
-    usePostStore(); // Add deletePost
+  const {
+    getPostById,
+    post,
+    isLoading,
+    error,
+    updatePost,
+    deletePost,
+    deleteComment,
+  } = usePostStore(); // Add deletePost
   const { authUser } = useAuthStore();
   const { followUser, unfollowUser, fetchFollowingStatus } = useFollowStore();
   const [user, setUserId] = useState(null);
@@ -29,14 +37,57 @@ const PostDetail = () => {
     location: "",
     image: [],
   });
+  const isAdminPage = location.pathname.startsWith("/admin");
+
   const { provinces, fetchProvinces } = usePostStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [comments, setComments] = useState([]); // Danh sách comment
+  const [newComment, setNewComment] = useState(""); // Nội dung comment mới
+  const [loading, setLoading] = useState(false);
 
+  // Lấy danh sách bình luận khi component được mount
+  // useEffect(() => {
+  //   const fetchComments = async () => {
+  //     try {
+  //       const response = await axiosInstance.get(`/post/comments/${id}`);
+  //       setComments(response.data);
+  //     } catch (error) {
+  //       console.error("Lỗi khi tải bình luận:", error);
+  //     }
+  //   };
+  //   fetchComments();
+  // }, [id]);
+
+  // Xử lý gửi bình luận
+  const handleCommentSubmit = async () => {
+    if (!newComment.trim()) return; // Không gửi comment rỗng
+    setLoading(true);
+
+    try {
+      const response = await axiosInstance.post("/post/comments", {
+        postId: post._id,
+        userId: authUser._id,
+        content: newComment,
+      });
+
+      setComments((prevComments) => [...prevComments, response.data.comment]);
+      setNewComment(""); // Reset input
+    } catch (error) {
+      console.error(
+        "Lỗi khi gửi bình luận:",
+        error.response?.data || error.message
+      );
+    }
+    setLoading(false);
+  };
   const breadcrumbs = useMemo(() => {
     return [
-      { name: "Home", path: "/" },
+      {
+        name: isAdminPage ? "Admin" : "Home",
+        path: isAdminPage ? "/admin-dashboard" : "/",
+      },
       { name: "Bài viết", path: "/post" },
       { name: post?.title || "Post", path: `/post/${id}` },
     ];
@@ -65,8 +116,11 @@ const PostDetail = () => {
 
   useEffect(() => {
     const checkFollowStatus = async () => {
-      if (authUser && post && post.userId) {
-        const status = await fetchFollowingStatus(authUser._id, post.userId);
+      if (authUser && post && post.userId._id) {
+        const status = await fetchFollowingStatus(
+          authUser._id,
+          post.userId._id
+        );
         setIsUserFollowing(status);
       }
     };
@@ -107,15 +161,31 @@ const PostDetail = () => {
     setIsEditing(false);
   };
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axiosInstance.get(`/post/comments/${id}`);
+        setComments(response.data.comments);
+      } catch (error) {
+        console.error("Lỗi khi tải bình luận:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchComments();
+    }
+  }, [id]);
   const handleFollowToggle = async () => {
-    if (!authUser || !post.userId) return;
+    if (!authUser || !post.userId._id) return;
     setIsFollowLoading(true);
     try {
       if (isUserFollowing) {
-        await unfollowUser(authUser._id, post.userId);
+        await unfollowUser(authUser._id, post.userId._id);
         setIsUserFollowing(false);
       } else {
-        await followUser(authUser._id, post.userId);
+        await followUser(authUser._id, post.userId._id);
         setIsUserFollowing(true);
       }
     } catch (error) {
@@ -157,6 +227,7 @@ const PostDetail = () => {
       }
     }
   };
+
   const handlePrevImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : post?.image?.length - 1
@@ -182,7 +253,6 @@ const PostDetail = () => {
   if (error) return <div>{error}</div>;
   if (!post) return <div>Post not found!</div>;
   // const postUrl = `${config.baseUrl}/post/${id}`;
-
   return (
     <div className="post-detail">
       {/* Breadcrumb */}
@@ -217,7 +287,7 @@ const PostDetail = () => {
             placeholder="Mô tả"
           />
           <input
-            type="text"
+            type="contact"
             name="contact"
             value={editedPost.contact}
             onChange={handleInputChange}
@@ -281,6 +351,9 @@ const PostDetail = () => {
               Liên lạc qua số : {post.contact}
             </button>
           </p>
+          <Link to={`/contract?postId=${post._id}&userId=${authUser._id}`}>
+            Giao dịch
+          </Link>
           <p className="post-location">
             Địa điểm: {getProvinceNameById(post.location)}
           </p>
@@ -332,6 +405,46 @@ const PostDetail = () => {
       ></script>
 
       <FacebookShareButton postId={post._id} />
+
+      {/* Phần bình luận */}
+      <div className="comments-section">
+        <h3>Bình luận</h3>
+        {authUser && (
+          <div className="comment-form">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Viết bình luận..."
+            />
+            <button onClick={handleCommentSubmit} disabled={loading}>
+              {loading ? "Đang gửi..." : "Gửi"}
+            </button>
+          </div>
+        )}
+
+        <div className="comments-list">
+          {loading ? (
+            <p>Đang tải bình luận...</p>
+          ) : comments.length > 0 ? (
+            comments.map((comment, index) => (
+              <div
+                key={comment._id || `comment-${index}`}
+                className="comment-item"
+              >
+                <b>{comment.userId.username}</b>: {comment.content} ,{" "}
+                {comment.createdAt}
+                {authUser && authUser._id && (
+                  <button onClick={() => deleteComment(comment._id)}>
+                    Xóa
+                  </button>
+                )}
+              </div>
+            ))
+          ) : (
+            <p>Chưa có bình luận nào.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

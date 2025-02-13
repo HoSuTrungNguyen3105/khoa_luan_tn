@@ -6,6 +6,7 @@ import axios from "axios";
 export const usePostStore = create((set, get) => ({
   posts: [], // Lưu danh sách bài đăng
   post: null, // A single post
+  comments: [],
   provinces: [],
   isCreating: false, // Trạng thái đang tạo bài viết
   createPostError: null,
@@ -13,7 +14,9 @@ export const usePostStore = create((set, get) => ({
   approvedPosts: [],
   pendingPosts: [],
   isLoading: false, // Trạng thái đang tải
+  loading: false,
   error: null, // Lưu thông báo lỗi nếu có
+  setComments: (comments) => set({ comments }),
   // Hàm tạo bài đăng
   createPost: async (formData) => {
     try {
@@ -55,6 +58,19 @@ export const usePostStore = create((set, get) => ({
   getPostById: async (id) => {
     set({ isLoading: true, error: null }); // Bắt đầu loading
     try {
+      const response = await axiosInstance.get(`/post/not/detail/${id}`);
+      if (response.data.status === "Success") {
+        set({ post: response.data.data }); // Cập nhật bài viết vào state
+      }
+    } catch (error) {
+      set({ error: "Error loading post", post: null }); // Nếu có lỗi
+    } finally {
+      set({ isLoading: false }); // Kết thúc loading
+    }
+  },
+  getPostByIdWithId: async (id) => {
+    set({ isLoading: true, error: null }); // Bắt đầu loading
+    try {
       const response = await axiosInstance.get(`/post/posts/detail/${id}`);
       if (response.data.status === "Success") {
         set({ post: response.data.data }); // Cập nhật bài viết vào state
@@ -88,6 +104,53 @@ export const usePostStore = create((set, get) => ({
       set({ error: "Có lỗi xảy ra khi tải bài đăng" }); // Lưu lỗi
     } finally {
       set({ isLoading: false }); // Kết thúc quá trình tải
+    }
+  },
+  fetchComments: async (postId) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await axiosInstance.get(`/post/comments/${postId}`);
+
+      set({ comments: data.comments, loading: false });
+    } catch (error) {
+      set({ error: "Không thể tải bình luận.", loading: false });
+      console.error("Lỗi khi tải bình luận:", error);
+    }
+  },
+
+  addComment: async (postId, userId, content) => {
+    set((state) => ({ loading: true }));
+
+    try {
+      const { data } = await axiosInstance.post("/post/comments", {
+        postId,
+        userId,
+        content,
+      });
+
+      set((state) => ({
+        comments: [data.comment, ...state.comments], // Thêm comment mới lên đầu
+        loading: false,
+      }));
+
+      toast.success("Bình luận đã được thêm!");
+    } catch (error) {
+      console.error("Lỗi khi gửi bình luận:", error);
+      toast.error("Không thể gửi bình luận.");
+      set({ loading: false });
+    }
+  },
+
+  deleteComment: async (commentId) => {
+    try {
+      await axiosInstance.delete(`/post/comments/${commentId}`);
+      set((state) => ({
+        comments: state.comments.filter((comment) => comment._id !== commentId),
+      })); // Cập nhật ngay lập tức trước khi gọi API
+      toast.success("Xóa bình luận thành công!");
+    } catch (error) {
+      console.error("Lỗi khi xóa bình luận:", error);
+      toast.error("Không thể xóa bình luận.");
     }
   },
   // Delete post

@@ -14,6 +14,7 @@ function ProfileModal({ modalOpened, setModalOpened, userData }) {
     email: userData?.email || "",
     firstname: userData?.firstname || "",
     lastname: userData?.lastname || "",
+    contact: userData?.contact || "",
   });
 
   // Hàm xử lý thay đổi dữ liệu từ các trường input
@@ -103,6 +104,24 @@ function ProfileModal({ modalOpened, setModalOpened, userData }) {
                 name="firstname"
                 placeholder="Họ & Tên đệm"
                 value={formData.firstname}
+                onChange={handleChange}
+              />
+            </p>
+          </ul>
+        </div>
+        <div>
+          <ul>
+            <li style={{ fontSize: "15px", fontWeight: "500" }}>
+              Số điện thoại
+            </li>
+            <p>
+              <input
+                type="number"
+                className="ProfileInput"
+                name="contact"
+                placeholder="Số điện thoại
+"
+                value={formData.contact}
                 onChange={handleChange}
               />
             </p>

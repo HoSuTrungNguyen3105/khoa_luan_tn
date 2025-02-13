@@ -1,7 +1,6 @@
 import UserModel from "../Models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import crypto from "crypto";
 import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
@@ -58,13 +57,13 @@ export const registerUser = async (req, res) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "trungnguyenhs3105@gmail.com",
-        pass: "ugtu fnsp xbqa vdff",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: "trungnguyenhs3105@gmail.com",
+      from: process.env.EMAIL_USER,
       to: email,
       subject: "Xác thực tài khoản",
       text: `Mã xác thực của bạn là: ${verificationCode}. Mã này sẽ hết hạn sau 15 phút.`,
@@ -171,8 +170,8 @@ export const forgetPassword = async (req, res) => {
     var transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "trungnguyenhs3105@gmail.com",
-        pass: "ugtu fnsp xbqa vdff",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
@@ -293,7 +292,47 @@ export const resetPassword = async (req, res) => {
       .json({ error: "Token không hợp lệ hoặc đã hết hạn!" });
   }
 };
+export const emailUser = async (req, res) => {
+  try {
+    const users = await UserModel.find({}, "email"); // Truy vấn MongoDB
+    res.json(users.map((user) => user.email));
+  } catch (error) {
+    console.error("Lỗi khi lấy email:", error);
+    res.status(500).json({ error: "Lỗi khi lấy danh sách email" });
+  }
+};
+// Cấu hình email
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+export const sendEmails = async (req, res) => {
+  const { emails, subject, message } = req.body; // Lấy dữ liệu từ request
 
+  if (!emails || !emails.length) {
+    return res
+      .status(400)
+      .json({ error: "Danh sách email không được để trống" });
+  }
+
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: emails.join(","), // Gửi đến nhiều email cùng lúc
+      subject: subject,
+      text: message,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ success: "Email đã được gửi thành công!" });
+  } catch (error) {
+    console.error("Lỗi gửi email:", error);
+    res.status(500).json({ error: "Lỗi khi gửi email" });
+  }
+};
 export const logoutUser = async (req, res) => {
   try {
     res.cookie("jwt", "", {
@@ -388,7 +427,7 @@ export const updateProfile = async (req, res) => {
 // Cập nhật thông tin người dùng
 export const updateUserInfo = async (req, res) => {
   try {
-    const { username, firstname, lastname, email } = req.body;
+    const { username, firstname, lastname, email, contact } = req.body;
     const userId = req.user._id;
 
     // Kiểm tra xem có ít nhất một trường cần cập nhật không
@@ -416,7 +455,7 @@ export const updateUserInfo = async (req, res) => {
     // Cập nhật thông tin user
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      { username, firstname, lastname, email },
+      { username, firstname, lastname, email, contact },
       {
         new: true,
         runValidators: true,

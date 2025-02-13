@@ -248,6 +248,9 @@ const Post = ({ data, currentUserId }) => {
         <br />
         Địa điểm: {getProvinceNameById(data.location)}
         <br />
+        <Link to={`/contract?postId=${data._id}&userId=${userId}`}>
+          Giao dịch
+        </Link>
         <span>Ngày tạo: {formattedDate}</span>
         <br />
         <span

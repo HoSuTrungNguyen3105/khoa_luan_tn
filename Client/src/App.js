@@ -27,6 +27,9 @@ import UserProfile from "./conpoments/Admin/UserProfile.jsx";
 import useCheckUserStatus from "./lib/check.js";
 import ErrorPage from "./ErrorPage.jsx";
 import Setting from "./conpoments/Admin/Setting.jsx";
+import SendEmail from "./conpoments/Admin/SendEmail.jsx";
+import Contract from "./conpoments/Post/Contract.jsx";
+import AdminList from "./conpoments/Admin/AdminList.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -84,6 +87,14 @@ const App = () => {
             }
           />
           <Route
+            path="/contract"
+            element={
+              <ProtectedRoute>
+                <Contract />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/change-password"
             element={
               <ProtectedRoute>
@@ -102,6 +113,7 @@ const App = () => {
             {/* Trang Dashboard mặc định */}
             <Route path="admin-post" element={<AdminDash />} />{" "}
             <Route path="admin-user" element={<UserList />} />{" "}
+            <Route path="admin-list" element={<AdminList />} />{" "}
             <Route path="admin-report" element={<ReportDashboard />} />{" "}
             <Route path="admin-adv" element={<AdvControl />} />{" "}
             <Route path="admin-message" element={<Chat />} />{" "}
@@ -110,6 +122,7 @@ const App = () => {
             <Route path="admin-all-chat" element={<AllUserChat />} />{" "}
             <Route path="profile/:userId" element={<UserProfile />} />
             <Route path="admin-setting" element={<Setting />} />{" "}
+            <Route path="send-email" element={<SendEmail />} />{" "}
             {/* Các route khác có thể thêm ở đây */}
           </Route>
           {/* Các route khác */}

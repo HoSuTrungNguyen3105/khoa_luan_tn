@@ -390,10 +390,10 @@ export const getPostApprove = async (req, res) => {
   }
 };
 
-export const getPostbyid = async (req, res) => {
+export const getPostbyidNoId = async (req, res) => {
   try {
     const { id } = req.params;
-    const post = await PostModel.findById(id);
+    const post = await PostModel.findById(id).populate("userId");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
@@ -408,7 +408,24 @@ export const getPostbyid = async (req, res) => {
     res.status(500).json({ message: "Error" });
   }
 };
+export const getPostbyid = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await PostModel.findById(id).populate("userId");
 
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    return res.json({
+      status: "Success",
+      data: post,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error" });
+  }
+};
 export const getRecentlyPosts = async (req, res) => {
   try {
     const posts = await PostModel.find().sort({ createdAt: -1 }).limit(5);

@@ -1,11 +1,8 @@
 import "./ProfileCard.css";
 import React, { useState } from "react";
-import { LogOut } from "lucide-react";
 import { Camera } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
-import { Link } from "react-router-dom";
 const ProfileCard = () => {
-  const { logout } = useAuthStore();
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
   const handleImageUpload = async (e) => {
@@ -22,11 +19,7 @@ const ProfileCard = () => {
       await updateProfile({ profilePic: base64Image });
     };
   };
-  const handleLogout = () => {
-    if (window.confirm("Bạn có chắc chắn muốn đăng xuất không?")) {
-      logout();
-    }
-  };
+
   return (
     <div className="ProfileCard">
       <div className="ProfileImg">
@@ -70,6 +63,14 @@ const ProfileCard = () => {
         <span style={{ fontSize: "23px" }}>
           {authUser.firstname} {authUser.lastname}
         </span>
+        <p>
+          <span className="text-blue-500 font-semibold">
+            Điểm thưởng : {authUser?.points}
+          </span>
+        </p>
+
+        <span>{authUser.favoritesCount} Yêu thích</span>
+
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
         {authUser?.role === "admin" && (
           <p className="text-red-900 font-extrabold mt-2">Admin</p>
@@ -91,36 +92,6 @@ const ProfileCard = () => {
         </div>
         <hr />
       </div>
-      {/* Các liên kết khác */}
-      <span>
-        <div className="profile-menu">
-          <ul>
-            <li className="i-profile">
-              <Link to="/profile">Trang Cá Nhân</Link>
-            </li>
-          </ul>
-          <ul>
-            <li className="i-profile">
-              <strong>Provider</strong>: {authUser.provider}
-            </li>
-          </ul>
-          <ul>
-            <button className="i-profile" onClick={handleLogout}>
-              Đăng xuất
-            </button>
-          </ul>
-          <ul>
-            <li className="i-profile">
-              <Link to="/delete-account">Xóa tài khoản</Link>
-            </li>
-          </ul>
-          <ul>
-            <li className="i-profile">
-              <Link to="/change-password">Đổi mật khẩu</Link>
-            </li>
-          </ul>
-        </div>
-      </span>
     </div>
   );
 };

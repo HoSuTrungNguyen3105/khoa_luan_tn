@@ -18,7 +18,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
     userId: authUser?._id || "",
     username: authUser?.username || "",
     desc: "",
-    contact: "",
+    contact: authUser?.contact || "",
     location: "",
     image: [],
   });

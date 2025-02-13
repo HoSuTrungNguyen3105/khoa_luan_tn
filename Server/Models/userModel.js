@@ -2,10 +2,6 @@ import mongoose from "mongoose";
 
 const userSchema = mongoose.Schema(
   {
-    //accountId can be google Id, facebook Id, github Id etc.
-    accountId: {
-      type: String,
-    },
     username: {
       type: String,
       required: true,
@@ -31,10 +27,16 @@ const userSchema = mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    contact: {
+      type: Number,
+    },
     profilePic: {
       type: String,
       default: "",
     },
+    points: { type: Number, default: 0 }, // Điểm thưởng
+    level: { type: String, default: "Thành viên mới" }, // Cấp độ
+    badges: [{ type: String }], // Danh hiệu
     favoritesCount: {
       type: Number,
       default: 0,

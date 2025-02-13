@@ -75,7 +75,7 @@ const AdminDash = () => {
     const url = URL.createObjectURL(converted); // Create a URL for the Blob
     const link = document.createElement("a"); // Create a link element
     link.href = url; // Set the link href to the Blob URL
-    link.download = "posts.docx"; // Set the file name
+    link.download = "post.docx"; // Set the file name
     link.click(); // Trigger the download
   };
   // Handle bulk delete of selected posts

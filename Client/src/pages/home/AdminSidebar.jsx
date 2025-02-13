@@ -3,7 +3,8 @@ import { Link, Outlet } from "react-router-dom";
 import "./AdminSidebar.css";
 import { FaUsers, FaNewspaper, FaCogs } from "react-icons/fa";
 import { MessageCircleCode, MessageCircleMore, Settings } from "lucide-react";
-import { MdPostAdd, MdReportProblem } from "react-icons/md";
+import { MdAttachEmail, MdPostAdd, MdReportProblem } from "react-icons/md";
+import { RiAdminFill } from "react-icons/ri";
 
 const AdminSidebar = () => {
   const sidebarItems = [
@@ -16,6 +17,11 @@ const AdminSidebar = () => {
       to: "/admin-dashboard/admin-user",
       icon: <FaUsers />,
       label: "Quản lý Người dùng",
+    },
+    {
+      to: "/admin-dashboard/admin-list",
+      icon: <RiAdminFill />,
+      label: "Admin List",
     },
     {
       to: "/admin-dashboard/admin-adv",
@@ -46,6 +52,11 @@ const AdminSidebar = () => {
       to: "/admin-dashboard/admin-setting",
       icon: <Settings />,
       label: "Cài đặt",
+    },
+    {
+      to: "/admin-dashboard/send-email",
+      icon: <MdAttachEmail />,
+      label: "Gửi Email",
     },
   ];
 

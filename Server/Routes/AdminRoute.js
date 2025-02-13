@@ -6,6 +6,7 @@ import {
   dashboard,
   deleteMessage,
   deleteUser,
+  getAllAdmin,
   getAllMessages,
   getAllPostsByMonth,
   getAllUsers,
@@ -18,7 +19,6 @@ import {
 import { protectRoute } from "../middleware/auth_middleware.js";
 import { checkAuth, checkUserStatus } from "../lib/checkAuth.js";
 import { getLostItemsCount } from "../Controllers/PostController.js";
-import authenticateToken from "../lib/auth.js";
 const router = express.Router();
 
 router.post("/approve/:id", approvePost);
@@ -29,6 +29,7 @@ router.get("/approvePost", getApprovedPosts);
 router.get("/check", protectRoute, checkAuth);
 router.delete("/user/:id", protectRoute, deleteUser);
 router.get("/getUsers", getAllUsers);
+router.get("/getAdmins", getAllAdmin);
 router.get("/messages", getAllMessages);
 router.delete("/message/:id", deleteMessage);
 router.get("/user/:userId", getUserById);

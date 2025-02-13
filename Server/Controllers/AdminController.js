@@ -18,6 +18,20 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json(error); // Trả về lỗi nếu có
   }
 };
+export const getAllAdmin = async (req, res) => {
+  try {
+    // Tìm tất cả người dùng không phải admin
+    let users = await UserModel.find({ role: "admin" });
+    // Loại bỏ trường `password` khỏi kết quả trả về
+    users = users.map((user) => {
+      const { password, ...otherDetails } = user._doc;
+      return otherDetails;
+    });
+    res.status(200).json(users); // Trả về danh sách người dùng
+  } catch (error) {
+    res.status(500).json(error); // Trả về lỗi nếu có
+  }
+};
 
 // API duyệt bài viết
 export const approvePost = async (req, res) => {
@@ -63,15 +77,6 @@ export const getApprovedPosts = async (req, res) => {
     res.status(500).json({ message: "Error fetching approved posts" });
   }
 };
-// export const  = async (req, res) => {
-//   try {
-//     const approvedPosts = await PostModel.find({ isApproved: true }); // Chỉ lấy bài đã được duyệt
-//     res.status(200).json(approvedPosts);
-//   } catch (error) {
-//     console.error("Error fetching approved posts:", error);
-//     res.status(500).json({ message: "Error fetching approved posts" });
-//   }
-// };
 
 export const getPendingPosts = async (req, res) => {
   try {

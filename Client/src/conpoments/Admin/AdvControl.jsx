@@ -1,27 +1,11 @@
 import React, { useEffect } from "react";
-import axios from "axios";
 import { axiosInstance } from "../../lib/axios";
-import { useNavigate, useParams } from "react-router-dom";
 import "./UserList.css";
 import { useAdStore } from "../../store/useAdStore";
 
 const AdvControl = () => {
-  const {
-    ads,
-    isLoading,
-    error,
-    formData,
-    editingAd,
-    setAds,
-    setLoading,
-    setError,
-    setFormData,
-    setEditingAd,
-    resetFormData,
-  } = useAdStore();
-  const navigate = useNavigate();
-  const { id } = useParams();
-
+  const { ads, formData, editingAd, setAds, setFormData, setEditingAd } =
+    useAdStore();
   // Lấy danh sách quảng cáo từ backend
   useEffect(() => {
     const fetchAds = async () => {

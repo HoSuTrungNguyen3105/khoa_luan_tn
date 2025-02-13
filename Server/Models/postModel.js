@@ -36,11 +36,6 @@ const postSchema = mongoose.Schema(
       ],
       default: [], // Thêm giá trị mặc định là mảng rỗng
     },
-    status: {
-      type: String,
-      enum: ["active", "archived", "deleted"],
-      default: "active",
-    },
     isAvailable: {
       type: Boolean,
       default: true,
