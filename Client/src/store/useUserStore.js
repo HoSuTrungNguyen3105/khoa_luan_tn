@@ -1,13 +1,15 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
+import toast from "react-hot-toast";
 
 export const useUserStore = create((set, get) => ({
   userProfile: [],
   isLoading: false,
   users: [], // Danh sách tất cả người dùng
   loggedInUserId: "", // ID người dùng hiện tại
-  error: null, // Trạng thái lỗi
-  // userProfile: {},
+  loading: false,
+  error: null,
+  contracts: [], // Danh sách hợp đồng
   setLoggedInUserId: (userId) => set({ loggedInUserId: userId }),
   following: {}, // Key-Value pair: userId -> follow status (true/false)
 
@@ -70,6 +72,45 @@ export const useUserStore = create((set, get) => ({
     } catch (error) {
       console.error("Error fetching users:", error.message);
       set({ error: "Failed to fetch users", isLoading: false });
+    }
+  },
+  // Lấy danh sách hợp đồng từ API
+  fetchContracts: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.get("/user/contraction");
+      set({ contracts: response.data });
+    } catch (error) {
+      set({ error: "Không thể tải hợp đồng." });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // Cập nhật trạng thái hợp đồng
+  updateContractStatus: async (contractId, newStatus) => {
+    try {
+      const response = await axiosInstance.put(
+        `/user/contraction/${contractId}/status`,
+        {
+          status: newStatus,
+        }
+      );
+
+      // Cập nhật trạng thái trong danh sách hợp đồng ngay lập tức
+      set((state) => ({
+        contracts: state.contracts.map((contract) =>
+          contract._id === contractId
+            ? { ...contract, status: newStatus }
+            : contract
+        ),
+      }));
+
+      toast.success("Cập nhật trạng thái thành công!");
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      toast.error("Không thể cập nhật trạng thái.");
     }
   },
 }));

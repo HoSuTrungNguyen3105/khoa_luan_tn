@@ -1,10 +1,9 @@
 import cloudinary from "../lib/cloudinary.js";
-import ContractModel from "../Models/contractModel.js";
 import Notification from "../Models/notificationModel.js";
 import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
+import ContractModel from "../Models/contractModel.js";
 import bcrypt from "bcryptjs";
-
 export const getUser = async (req, res) => {
   const id = req.params.id;
   try {
@@ -237,12 +236,12 @@ export const contract = async (req, res) => {
     }
 
     // Tạo hợp đồng mới
-    const newContract = new ContractModel({
+    const newContract = new {
       finder: finderId,
       loser: loserId,
       image: images || [],
       status: "pending",
-    });
+    }();
 
     // Lưu hợp đồng vào database
     await newContract.save();
@@ -255,6 +254,59 @@ export const contract = async (req, res) => {
   } catch (error) {
     console.error("Lỗi khi tạo hợp đồng:", error);
     res.status(500).json({ message: "Lỗi khi tạo hợp đồng." });
+  }
+};
+export const addContract = async (req, res) => {
+  try {
+    const { finderId, loserId, postId, images } = req.body;
+
+    if (!finderId || !loserId || !postId) {
+      return res.status(400).json({ message: "Thiếu thông tin hợp đồng!" });
+    }
+
+    if (finderId === loserId) {
+      return res
+        .status(400)
+        .json({ message: "Không thể tạo hợp đồng với chính mình!" });
+    }
+
+    // Kiểm tra người dùng và bài đăng tồn tại không
+    const finder = await UserModel.findById(finderId);
+    const loser = await UserModel.findById(loserId);
+    const post = await PostModel.findById(postId);
+
+    if (!finder || !loser || !post) {
+      return res
+        .status(404)
+        .json({ message: "Người dùng hoặc bài đăng không tồn tại!" });
+    }
+
+    // Kiểm tra xem hợp đồng đã tồn tại chưa
+    const existingContract = await ContractModel.findOne({
+      finder: { userId: finderId },
+      loser: { userId: loserId },
+      postId,
+    });
+
+    if (existingContract) {
+      return res.status(400).json({ message: "Hợp đồng đã tồn tại!" });
+    }
+
+    // Tạo hợp đồng mới
+    const newContract = new ContractModel({
+      finder: { userId: finderId, images },
+      loser: { userId: loserId },
+      postId,
+    });
+
+    await newContract.save();
+
+    res
+      .status(201)
+      .json({ message: "Hợp đồng đã được tạo!", contract: newContract });
+  } catch (error) {
+    console.error("Lỗi khi tạo hợp đồng:", error);
+    res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại!" });
   }
 };
 const handleImageUpload = async (images) => {
@@ -273,6 +325,49 @@ const handleImageUpload = async (images) => {
   }
 
   return imageUrls;
+};
+export const acceptContract = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Kiểm tra trạng thái hợp lệ
+    if (!["pending", "confirmed", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Trạng thái không hợp lệ." });
+    }
+
+    // Cập nhật trạng thái hợp đồng
+    const contract = await ContractModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!contract) {
+      return res.status(404).json({ message: "Hợp đồng không tồn tại." });
+    }
+
+    return res.status(200).json({
+      message: "Cập nhật trạng thái thành công.",
+      contract,
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật trạng thái:", error);
+    res.status(500).json({ message: "Lỗi server." });
+  }
+};
+export const fetchContract = async (req, res) => {
+  try {
+    const contracts = await ContractModel.find()
+      .populate("finder.userId", "username") // Lấy thông tin người tìm
+      .populate("loser.userId", "username") // Lấy thông tin người bị mất
+      .populate("postId", "desc"); // Lấy thông tin bài đăng
+
+    res.status(200).json(contracts);
+  } catch (error) {
+    console.error("Lỗi lấy danh sách hợp đồng:", error);
+    res.status(500).json({ message: "Lỗi server." });
+  }
 };
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;

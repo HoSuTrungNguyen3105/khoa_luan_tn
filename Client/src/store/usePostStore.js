@@ -16,7 +16,7 @@ export const usePostStore = create((set, get) => ({
   isLoading: false, // Trạng thái đang tải
   loading: false,
   error: null, // Lưu thông báo lỗi nếu có
-  setComments: (comments) => set({ comments }),
+  setComments: (newComments) => set(() => ({ comments: newComments })), // Không mutate trực tiếp
   // Hàm tạo bài đăng
   createPost: async (formData) => {
     try {
@@ -58,7 +58,7 @@ export const usePostStore = create((set, get) => ({
   getPostById: async (id) => {
     set({ isLoading: true, error: null }); // Bắt đầu loading
     try {
-      const response = await axiosInstance.get(`/post/not/detail/${id}`);
+      const response = await axiosInstance.get(`/post/detail/${id}`);
       if (response.data.status === "Success") {
         set({ post: response.data.data }); // Cập nhật bài viết vào state
       }
@@ -107,13 +107,12 @@ export const usePostStore = create((set, get) => ({
     }
   },
   fetchComments: async (postId) => {
-    set({ loading: true, error: null });
     try {
-      const { data } = await axiosInstance.get(`/post/comments/${postId}`);
-
-      set({ comments: data.comments, loading: false });
+      const response = await axiosInstance.get(`/post/comments/${postId}`);
+      console.log("Fetched comments from API:", response.data); // Kiểm tra API có trả về dữ liệu đúng không
+      set({ comments: response.data });
+      console.log("Comments in Zustand store:", get().comments); // Kiểm tra Zustand đã cập nhật chưa
     } catch (error) {
-      set({ error: "Không thể tải bình luận.", loading: false });
       console.error("Lỗi khi tải bình luận:", error);
     }
   },
@@ -122,14 +121,14 @@ export const usePostStore = create((set, get) => ({
     set((state) => ({ loading: true }));
 
     try {
-      const { data } = await axiosInstance.post("/post/comments", {
+      const response = await axiosInstance.post("/post/comments", {
         postId,
         userId,
         content,
       });
 
       set((state) => ({
-        comments: [data.comment, ...state.comments], // Thêm comment mới lên đầu
+        comments: [response.data.comment, ...state.comments], // Thêm comment mới lên đầu
         loading: false,
       }));
 

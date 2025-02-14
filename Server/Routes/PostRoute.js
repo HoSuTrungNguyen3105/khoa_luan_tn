@@ -43,7 +43,7 @@ router.get("/provinces", (req, res) => {
 router.post("/report/:postId", reportPost);
 router.get("/search", search);
 router.get("/posts/detail/:id", getPostbyid); // Để lấy bài viết theo id
-router.get("/not/detail/:id", getPostbyidNoId); // Để lấy bài viết theo id
+router.get("/detail/:id", getPostbyidNoId); // Để lấy bài viết theo id
 
 router.get("/postsId/getRecently", getRecentlyPosts); // Để lấy bài viết theo id
 router.get("/postsId/getOldest", getOldestPosts); // Để lấy bài viết theo id

@@ -20,6 +20,9 @@ const PostDetail = () => {
     error,
     updatePost,
     deletePost,
+    fetchComments,
+    addComment,
+    comments,
     deleteComment,
   } = usePostStore(); // Add deletePost
   const { authUser } = useAuthStore();
@@ -43,7 +46,6 @@ const PostDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [comments, setComments] = useState([]); // Danh sách comment
   const [newComment, setNewComment] = useState(""); // Nội dung comment mới
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +61,15 @@ const PostDetail = () => {
   //   };
   //   fetchComments();
   // }, [id]);
+  useEffect(() => {
+    if (id) {
+      console.log("Fetching comments for post:", id);
+      fetchComments(id);
+    }
+  }, [id]);
+  useEffect(() => {
+    console.log("Current comments state:", comments);
+  }, [comments]);
 
   // Xử lý gửi bình luận
   const handleCommentSubmit = async () => {
@@ -72,7 +83,7 @@ const PostDetail = () => {
         content: newComment,
       });
 
-      setComments((prevComments) => [...prevComments, response.data.comment]);
+      // setComments((prevComments) => [...prevComments, response.data.comment]);
       setNewComment(""); // Reset input
     } catch (error) {
       console.error(
@@ -161,22 +172,22 @@ const PostDetail = () => {
     setIsEditing(false);
   };
 
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const response = await axiosInstance.get(`/post/comments/${id}`);
-        setComments(response.data.comments);
-      } catch (error) {
-        console.error("Lỗi khi tải bình luận:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchComments = async () => {
+  //     try {
+  //       const response = await axiosInstance.get(`/post/comments/${id}`);
+  //       setComments(response.data.comments);
+  //     } catch (error) {
+  //       console.error("Lỗi khi tải bình luận:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    if (id) {
-      fetchComments();
-    }
-  }, [id]);
+  //   if (id) {
+  //     fetchComments();
+  //   }
+  // }, [id]);
   const handleFollowToggle = async () => {
     if (!authUser || !post.userId._id) return;
     setIsFollowLoading(true);
@@ -399,7 +410,7 @@ const PostDetail = () => {
       <script
         async
         defer
-        crossorigin="anonymous"
+        crossOrigin="anonymous"
         src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v16.0"
         nonce="ABC123"
       ></script>
@@ -423,21 +434,14 @@ const PostDetail = () => {
         )}
 
         <div className="comments-list">
-          {loading ? (
-            <p>Đang tải bình luận...</p>
-          ) : comments.length > 0 ? (
-            comments.map((comment, index) => (
-              <div
-                key={comment._id || `comment-${index}`}
-                className="comment-item"
-              >
-                <b>{comment.userId.username}</b>: {comment.content} ,{" "}
-                {comment.createdAt}
-                {authUser && authUser._id && (
-                  <button onClick={() => deleteComment(comment._id)}>
-                    Xóa
-                  </button>
-                )}
+          {console.log("Rendering comments:", comments)}
+
+          {comments && comments.length > 0 ? (
+            comments.map((comment) => (
+              <div key={comment._id} className="comment">
+                <p>
+                  <b>{comment.userId?.username}</b>: {comment.content}
+                </p>
               </div>
             ))
           ) : (

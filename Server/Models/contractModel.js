@@ -8,9 +8,7 @@ const ContractSchema = new mongoose.Schema(
         ref: "User",
         required: true,
       },
-      phone: { type: String, required: true },
-      address: { type: String, required: true },
-      images: [{ type: String }],
+      images: [{ type: String }], // Ảnh chứng minh đồ vật
     },
     loser: {
       userId: {
@@ -18,12 +16,10 @@ const ContractSchema = new mongoose.Schema(
         ref: "User",
         required: true,
       },
-      phone: { type: String, required: true },
-      address: { type: String, required: true },
     },
     postId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Post",
+      ref: "Posts",
       required: true,
     },
     status: {
