@@ -17,6 +17,8 @@ export const usePostStore = create((set, get) => ({
   loading: false,
   error: null, // Lưu thông báo lỗi nếu có
   setComments: (newComments) => set(() => ({ comments: newComments })), // Không mutate trực tiếp
+  // setComments: (newComments) => set({ comments: newComments }),
+
   // Hàm tạo bài đăng
   createPost: async (formData) => {
     try {
@@ -110,7 +112,7 @@ export const usePostStore = create((set, get) => ({
     try {
       const response = await axiosInstance.get(`/post/comments/${postId}`);
       console.log("Fetched comments from API:", response.data); // Kiểm tra API có trả về dữ liệu đúng không
-      set({ comments: response.data });
+      set({ comments: response.data.comments }); // Chỉ lưu phần comments
       console.log("Comments in Zustand store:", get().comments); // Kiểm tra Zustand đã cập nhật chưa
     } catch (error) {
       console.error("Lỗi khi tải bình luận:", error);
@@ -118,7 +120,28 @@ export const usePostStore = create((set, get) => ({
   },
 
   addComment: async (postId, userId, content) => {
-    set((state) => ({ loading: true }));
+    try {
+      const response = await axiosInstance.post("/post/comments", {
+        postId,
+        userId,
+        content,
+      });
+      console.log("Comment returned from API:", response.data.comment); // Kiểm tra dữ liệu trả về
+
+      set((state) => ({
+        comments: [response.data.comment, ...state.comments], // Thêm comment mới lên đầu
+        loading: false,
+      }));
+      console.log("Comments after adding:", response); // Kiểm tra xem comment đã được thêm chưa
+      toast.success("Bình luận đã được thêm!");
+    } catch (error) {
+      console.error("Lỗi khi gửi bình luận:", error);
+      toast.error("Không thể gửi bình luận.");
+      set({ loading: false });
+    }
+  },
+  submitComment: async (postId, userId, content) => {
+    if (!content.trim()) return; // Không gửi bình luận rỗng
 
     try {
       const response = await axiosInstance.post("/post/comments", {
@@ -127,19 +150,18 @@ export const usePostStore = create((set, get) => ({
         content,
       });
 
-      set((state) => ({
-        comments: [response.data.comment, ...state.comments], // Thêm comment mới lên đầu
-        loading: false,
-      }));
+      // Cập nhật Zustand (Thêm comment mới vào danh sách)
+      set({ comments: [...get().comments, response.data.comment] });
 
-      toast.success("Bình luận đã được thêm!");
+      return response.data.comment; // Trả về comment mới để xử lý nếu cần
     } catch (error) {
-      console.error("Lỗi khi gửi bình luận:", error);
-      toast.error("Không thể gửi bình luận.");
-      set({ loading: false });
+      console.error(
+        "Lỗi khi gửi bình luận:",
+        error.response?.data || error.message
+      );
+      throw error;
     }
   },
-
   deleteComment: async (commentId) => {
     try {
       await axiosInstance.delete(`/post/comments/${commentId}`);

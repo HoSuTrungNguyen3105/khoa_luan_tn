@@ -7,7 +7,7 @@ import "./PostDetail.css";
 import FacebookShareButton from "./FacebookShareButton";
 import { Share2, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
-import { axiosInstance } from "../../lib/axios";
+import moment from "moment"; // Thư viện để xử lý thời gian
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -49,50 +49,12 @@ const PostDetail = () => {
   const [newComment, setNewComment] = useState(""); // Nội dung comment mới
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh sách bình luận khi component được mount
-  // useEffect(() => {
-  //   const fetchComments = async () => {
-  //     try {
-  //       const response = await axiosInstance.get(`/post/comments/${id}`);
-  //       setComments(response.data);
-  //     } catch (error) {
-  //       console.error("Lỗi khi tải bình luận:", error);
-  //     }
-  //   };
-  //   fetchComments();
-  // }, [id]);
   useEffect(() => {
     if (id) {
-      console.log("Fetching comments for post:", id);
       fetchComments(id);
     }
-  }, [id]);
-  useEffect(() => {
-    console.log("Current comments state:", comments);
-  }, [comments]);
+  }, [id, fetchComments]);
 
-  // Xử lý gửi bình luận
-  const handleCommentSubmit = async () => {
-    if (!newComment.trim()) return; // Không gửi comment rỗng
-    setLoading(true);
-
-    try {
-      const response = await axiosInstance.post("/post/comments", {
-        postId: post._id,
-        userId: authUser._id,
-        content: newComment,
-      });
-
-      // setComments((prevComments) => [...prevComments, response.data.comment]);
-      setNewComment(""); // Reset input
-    } catch (error) {
-      console.error(
-        "Lỗi khi gửi bình luận:",
-        error.response?.data || error.message
-      );
-    }
-    setLoading(false);
-  };
   const breadcrumbs = useMemo(() => {
     return [
       {
@@ -172,22 +134,6 @@ const PostDetail = () => {
     setIsEditing(false);
   };
 
-  // useEffect(() => {
-  //   const fetchComments = async () => {
-  //     try {
-  //       const response = await axiosInstance.get(`/post/comments/${id}`);
-  //       setComments(response.data.comments);
-  //     } catch (error) {
-  //       console.error("Lỗi khi tải bình luận:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (id) {
-  //     fetchComments();
-  //   }
-  // }, [id]);
   const handleFollowToggle = async () => {
     if (!authUser || !post.userId._id) return;
     setIsFollowLoading(true);
@@ -259,7 +205,15 @@ const PostDetail = () => {
     document.body.appendChild(script);
     return () => document.body.removeChild(script);
   }, []);
+  const handleSubmit = async () => {
+    try {
+      await addComment(post._id, authUser._id, newComment);
 
+      setNewComment(""); // Reset input
+    } catch (error) {
+      console.error("Không thể gửi bình luận:", error);
+    }
+  };
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!post) return <div>Post not found!</div>;
@@ -418,36 +372,80 @@ const PostDetail = () => {
       <FacebookShareButton postId={post._id} />
 
       {/* Phần bình luận */}
-      <div className="comments-section">
-        <h3>Bình luận</h3>
-        {authUser && (
-          <div className="comment-form">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Viết bình luận..."
-            />
-            <button onClick={handleCommentSubmit} disabled={loading}>
-              {loading ? "Đang gửi..." : "Gửi"}
-            </button>
-          </div>
-        )}
+      <h3 className="text-lg font-semibold border-b pb-2 mb-4">Bình luận</h3>
 
-        <div className="comments-list">
-          {console.log("Rendering comments:", comments)}
-
-          {comments && comments.length > 0 ? (
-            comments.map((comment) => (
-              <div key={comment._id} className="comment">
-                <p>
-                  <b>{comment.userId?.username}</b>: {comment.content}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p>Chưa có bình luận nào.</p>
-          )}
+      {authUser && (
+        <div className="comment-form mb-4">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Viết bình luận..."
+            className="w-full p-2 border rounded-md focus:ring focus:ring-blue-300"
+            rows="3"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:bg-gray-400"
+          >
+            {loading ? "Đang gửi..." : "Gửi"}
+          </button>
         </div>
+      )}
+      <div className="comments space-y-3">
+        {comments && comments.length > 0 ? (
+          comments.map((comment) => (
+            <div
+              key={comment._id}
+              className="comment flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
+            >
+              {/* Avatar */}
+              <img
+                src={comment.userId?.avatar || "https://via.placeholder.com/40"} // Avatar mặc định nếu không có
+                alt={comment.userId?.username}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+
+              {/* Nội dung bình luận */}
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm">
+                    {comment.userId?.username}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {moment(comment.createdAt).fromNow()}{" "}
+                    {/* Hiển thị thời gian */}
+                  </span>
+                </div>
+                <h1>{comment.content}</h1>
+
+                {/* Nút Like và Phản hồi */}
+                <div className="flex items-center gap-4 mt-2">
+                  <button className="text-sm text-gray-600 hover:text-blue-500 transition">
+                    Thích
+                  </button>
+                  <button className="text-sm text-gray-600 hover:text-blue-500 transition">
+                    Phản hồi
+                  </button>
+                </div>
+              </div>
+
+              {/* Nút xóa (chỉ hiển thị cho người dùng đã đăng bình luận) */}
+              {authUser._id === comment.userId._id && (
+                <button
+                  onClick={() => deleteComment(comment._id)}
+                  className="text-gray-500 hover:text-red-500 transition"
+                >
+                  🗑
+                </button>
+              )}
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500 text-center py-4">
+            Chưa có bình luận nào.
+          </p>
+        )}
       </div>
     </div>
   );

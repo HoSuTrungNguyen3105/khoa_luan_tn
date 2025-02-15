@@ -27,11 +27,16 @@ import UserModel from "../Models/userModel.js";
 // };
 export const getCommentsByPostId = async (req, res) => {
   try {
-    const comments = await Comment.find({ postId: req.params.postId })
-      .populate("userId", "username email") // Lấy thông tin người bình luận
-      .sort({ createdAt: -1 }) // Sắp xếp mới nhất lên đầu
-      .lean(); // Trả về Object thuần để tối ưu hiệu suất
+    const { postId } = req.params;
 
+    if (!postId || postId.length !== 24) {
+      return res.status(400).json({ message: "postId không hợp lệ" });
+    }
+
+    const comments = await Comment.find({ postId })
+      .populate("userId", "username email")
+      .sort({ createdAt: -1 })
+      .lean();
     res.status(200).json({ status: "Success", comments });
   } catch (error) {
     console.error("Lỗi khi lấy bình luận:", error);
@@ -43,26 +48,13 @@ export const addComment = async (req, res) => {
   try {
     const { postId, userId, content } = req.body;
 
-    if (!postId || !userId || !content) {
-      return res.status(400).json({ message: "Thiếu dữ liệu bắt buộc." });
-    }
-
-    const post = await PostModel.findById(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Không tìm thấy bài viết." });
-    }
-
-    const newComment = new Comment({
-      postId,
-      userId,
-      content,
-    });
-
+    const newComment = new Comment({ postId, userId, content });
     await newComment.save();
 
-    res
-      .status(201)
-      .json({ message: "Bình luận đã được thêm.", comment: newComment });
+    // Populate userId để trả về đầy đủ thông tin người dùng
+    const populatedComment = await newComment.populate("userId", "username");
+
+    res.status(201).json({ status: "Success", comment: populatedComment });
   } catch (error) {
     console.error("Lỗi khi thêm bình luận:", error);
     res.status(500).json({ message: "Lỗi khi gửi bình luận." });

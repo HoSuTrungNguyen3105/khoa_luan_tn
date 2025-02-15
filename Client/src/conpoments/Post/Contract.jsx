@@ -35,10 +35,6 @@ const Contract = () => {
     setLoserId(isFinder ? post?.userId?._id : authUser._id);
   }, [post, authUser]);
 
-  const existingContracts = contracts.filter(
-    (contract) => contract.postId === id
-  );
-
   const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     Promise.all(
