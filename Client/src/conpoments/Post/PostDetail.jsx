@@ -233,7 +233,7 @@ const PostDetail = () => {
       <div className="post-header">
         {user && (
           <p>
-            <b>Người đăng:</b> {user}
+            <b>Người đăng:</b> {post.userId.username}
           </p>
         )}
         {authUser && (
@@ -322,6 +322,9 @@ const PostDetail = () => {
           <p className="post-location">
             Địa điểm: {getProvinceNameById(post.location)}
           </p>
+          <Link to={`/user/profile/${post.userId._id}`}>
+            {post.userId.username}
+          </Link>
         </div>
       )}
 
@@ -400,11 +403,13 @@ const PostDetail = () => {
               className="comment flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
             >
               {/* Avatar */}
-              <img
-                src={comment.userId?.avatar || "https://via.placeholder.com/40"} // Avatar mặc định nếu không có
-                alt={comment.userId?.username}
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <Link to={`/user/profile/${post.userId._id}`}>
+                <img
+                  src={comment.userId?.profilePic || "/avatar.jpg"} // Avatar mặc định nếu không có
+                  alt={comment.userId?.username}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+              </Link>
 
               {/* Nội dung bình luận */}
               <div className="flex-1">

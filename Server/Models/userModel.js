@@ -35,11 +35,20 @@ const userSchema = mongoose.Schema(
       default: "",
     },
     points: { type: Number, default: 0 }, // Điểm thưởng
-    level: { type: String, default: "Thành viên mới" }, // Cấp độ
-    badges: [{ type: String }], // Danh hiệu
+    level: { type: Number, default: 0 }, // Cấp độ dưới dạng số
+    badges: [{ type: Number, default: [] }], // Danh hiệu dưới dạng số
     favoritesCount: {
       type: Number,
       default: 0,
+    },
+    reports: {
+      type: [
+        {
+          reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          reportedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [], // Thêm giá trị mặc định là mảng rỗng
     },
     followers: [],
     following: [],

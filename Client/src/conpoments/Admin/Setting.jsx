@@ -11,8 +11,6 @@ const checkPasswordStrength = (password) => {
 };
 
 const Setting = () => {
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [smsNotifications, setSmsNotifications] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

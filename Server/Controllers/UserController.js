@@ -36,7 +36,30 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({ message: "Error retrieving user profile" });
   }
 };
+export const getUserById = async (req, res) => {
+  const { userId } = req.params; // Lấy userId từ params
+  try {
+    const user = await UserModel.findById(userId);
 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Lấy danh sách bài đăng của người dùng
+    const posts = await PostModel.find({ userId });
+
+    // Loại bỏ mật khẩu trước khi trả về
+    const { password, ...otherDetails } = user._doc;
+
+    res.status(200).json({
+      ...otherDetails,
+      posts, // Thêm danh sách bài đăng của user vào response
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error retrieving user profile" });
+  }
+};
 export const deleteUser = async (req, res) => {
   const id = req.params.id;
   const { currentUserId, currentUserAdminStatus } = req.body;
@@ -224,37 +247,32 @@ export const rewardPoint = async (req, res) => {
   }
 };
 export const contract = async (req, res) => {
-  try {
-    const { finderId, loserId, images } = req.body;
-
-    // Kiểm tra xem finderId và loserId có hợp lệ không
-    const finder = await UserModel.findById(finderId);
-    const loser = await UserModel.findById(loserId);
-
-    if (!finder || !loser) {
-      return res.status(404).json({ message: "Người dùng không tồn tại." });
-    }
-
-    // Tạo hợp đồng mới
-    const newContract = new {
-      finder: finderId,
-      loser: loserId,
-      image: images || [],
-      status: "pending",
-    }();
-
-    // Lưu hợp đồng vào database
-    await newContract.save();
-
-    res.status(201).json({
-      status: "Success",
-      message: "Hợp đồng đã được tạo.",
-      data: newContract,
-    });
-  } catch (error) {
-    console.error("Lỗi khi tạo hợp đồng:", error);
-    res.status(500).json({ message: "Lỗi khi tạo hợp đồng." });
-  }
+  // try {
+  //   const { finderId, loserId, images } = req.body;
+  //   // Kiểm tra xem finderId và loserId có hợp lệ không
+  //   const finder = await UserModel.findById(finderId);
+  //   const loser = await UserModel.findById(loserId);
+  //   if (!finder || !loser) {
+  //     return res.status(404).json({ message: "Người dùng không tồn tại." });
+  //   }
+  //   // Tạo hợp đồng mới
+  //   const newContract = new {
+  //     finder: finderId,
+  //     loser: loserId,
+  //     image: images || [],
+  //     status: "pending",
+  //   }();
+  //   // Lưu hợp đồng vào database
+  //   await newContract.save();
+  //   res.status(201).json({
+  //     status: "Success",
+  //     message: "Hợp đồng đã được tạo.",
+  //     data: newContract,
+  //   });
+  // } catch (error) {
+  //   console.error("Lỗi khi tạo hợp đồng:", error);
+  //   res.status(500).json({ message: "Lỗi khi tạo hợp đồng." });
+  // }
 };
 export const addContract = async (req, res) => {
   try {
@@ -282,14 +300,12 @@ export const addContract = async (req, res) => {
     }
 
     // Kiểm tra xem hợp đồng đã tồn tại chưa
-    const existingContract = await ContractModel.findOne({
-      finder: { userId: finderId },
-      loser: { userId: loserId },
-      postId,
-    });
+    const existingContract = await ContractModel.findOne({ postId });
 
     if (existingContract) {
-      return res.status(400).json({ message: "Hợp đồng đã tồn tại!" });
+      return res
+        .status(400)
+        .json({ message: "Hợp đồng cho bài viết này đã tồn tại." });
     }
 
     // Tạo hợp đồng mới
@@ -309,23 +325,58 @@ export const addContract = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại!" });
   }
 };
-const handleImageUpload = async (images) => {
-  const imageUrls = [];
-
-  for (let i = 0; i < images.length; i++) {
-    try {
-      const uploadResponse = await cloudinary.uploader.upload(images[i], {
-        resource_type: "auto", // Tự động nhận dạng loại tệp
-      });
-      imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
-    } catch (error) {
-      console.error("Lỗi khi upload ảnh:", error);
-      throw new Error("Có lỗi xảy ra khi upload ảnh");
-    }
-  }
-
-  return imageUrls;
+const levelMapping = {
+  1: "Thành viên mới",
+  2: "Thành viên đồng",
+  3: "Thành viên bạc",
+  4: "Thành viên vàng",
+  5: "Thành viên kim cương",
 };
+
+// Hàm chuyển đổi level số sang text
+const getLevelText = (level) => {
+  return levelMapping[level] || "Thành viên đặc biệt";
+};
+
+export const updateUserLevel = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Tính toán level dựa trên năm đăng ký
+    const currentYear = new Date().getFullYear();
+    const registrationYear = user.createdAt.getFullYear();
+    const yearsRegistered = currentYear - registrationYear;
+
+    // Gán level mới
+    const newLevel = yearsRegistered > 5 ? 5 : yearsRegistered; // Giới hạn max là 5
+
+    // Cập nhật danh hiệu (badges)
+    let newBadges = [...user.badges];
+    if (!newBadges.includes(newLevel)) {
+      newBadges.push(newLevel);
+    }
+
+    if (user.level !== newLevel) {
+      user.level = newLevel;
+      user.badges = newBadges;
+      await user.save();
+    }
+
+    return res.status(200).json({
+      level: user.level,
+      levelText: getLevelText(user.level),
+      badges: user.badges.map(getLevelText),
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật cấp độ:", error);
+    return res.status(500).json({ message: "Lỗi cập nhật cấp độ" });
+  }
+};
+
 export const acceptContract = async (req, res) => {
   try {
     const { id } = req.params;

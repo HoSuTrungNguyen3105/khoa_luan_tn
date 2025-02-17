@@ -28,7 +28,6 @@ function Login({ isAdminLogin }) {
   });
 
   const { login, isLoggingIn, user, fetchDataByRole } = useAuthStore();
-  const navigate = useNavigate();
   const [error, setError] = useState(""); // Thêm state để lưu lỗi
 
   const handleSubmit = async (e) => {

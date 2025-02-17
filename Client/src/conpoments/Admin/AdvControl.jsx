@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { axiosInstance } from "../../lib/axios";
-import "./UserList.css";
+import "./Report.css";
 import { useAdStore } from "../../store/useAdStore";
 
 const AdvControl = () => {
@@ -68,17 +68,17 @@ const AdvControl = () => {
       <div className="ads-section">
         {ads.map((adv) => (
           <div key={adv._id} className="ad-card">
-            <button
-              className="btn btn-unblock"
-              onClick={() => handleEditPost(adv)}
-            >
-              Chỉnh sửa
-            </button>
             <div className="ad-card-image">
               <img src={adv.img} alt="Ad" />
             </div>
             <div className="ad-card-content">
               <p>{adv.ND}</p>
+              <button
+                className="btn btn-edit"
+                onClick={() => handleEditPost(adv)}
+              >
+                Chỉnh sửa
+              </button>
             </div>
           </div>
         ))}
@@ -86,27 +86,35 @@ const AdvControl = () => {
 
       {/* Form chỉnh sửa (chỉ hiển thị khi có quảng cáo để chỉnh sửa) */}
       {editingAd && (
-        <div className="form-section">
-          <h3>Chỉnh sửa quảng cáo</h3>
-          <form onSubmit={handleSaveEdit}>
-            <label htmlFor="ND">Nội dung:</label>
-            <textarea
-              name="ND"
-              value={formData.ND}
-              onChange={handleChange}
-              placeholder="Nhập nội dung"
-            />
-            <label htmlFor="img">Link hình ảnh:</label>
-            <input
-              name="img"
-              value={formData.img}
-              onChange={handleChange}
-              placeholder="Nhập link hình ảnh"
-            />
-            <button className="btn btn-block" type="submit">
-              Lưu
-            </button>
-          </form>
+        <div className="form-overlay">
+          <div className="form-section">
+            <h3>Chỉnh sửa quảng cáo</h3>
+            <form onSubmit={handleSaveEdit}>
+              <label htmlFor="ND">Nội dung:</label>
+              <textarea
+                name="ND"
+                value={formData.ND}
+                onChange={handleChange}
+                placeholder="Nhập nội dung"
+              />
+              <label htmlFor="img">Link hình ảnh:</label>
+              <input
+                name="img"
+                value={formData.img}
+                onChange={handleChange}
+                placeholder="Nhập link hình ảnh"
+              />
+              <button className="btn btn-save" type="submit">
+                Lưu
+              </button>
+              <button
+                className="btn btn-cancel"
+                onClick={() => setEditingAd(null)}
+              >
+                Hủy
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -1,10 +1,33 @@
 import "./ProfileCard.css";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
+import { axiosInstance } from "../../lib/axios"; // Giả sử bạn đã có axiosInstance để gọi API
+
 const ProfileCard = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
+  const [level, setLevel] = useState(authUser?.level || "Thành viên mới");
+
+  // Cập nhật cấp độ người dùng khi component mount hoặc khi có sự thay đổi về người dùng
+  const updateUserLevel = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/user/${authUser._id}/update-level`
+      );
+      const newLevel = response.data.level;
+      setLevel(newLevel);
+    } catch (error) {
+      console.error("Lỗi cập nhật cấp độ:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (authUser?._id) {
+      updateUserLevel();
+    }
+  }, [authUser?._id]); // Gọi lại khi userId thay đổi
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -70,6 +93,11 @@ const ProfileCard = () => {
         </p>
 
         <span>{authUser.favoritesCount} Yêu thích</span>
+
+        {/* Hiển thị cấp độ của người dùng */}
+        <p className="mt-2">
+          <span className="text-green-500 font-semibold">Cấp độ: {level}</span>
+        </p>
 
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
         {authUser?.role === "admin" && (

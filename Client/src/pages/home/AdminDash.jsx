@@ -132,11 +132,6 @@ const AdminDash = () => {
     try {
       setLoadingButtons((prev) => ({ ...prev, [postId]: true }));
       await toggleApproval(postId, newStatus);
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId ? { ...post, isApproved: newStatus } : post
-        )
-      );
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error);
     } finally {

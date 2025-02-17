@@ -24,6 +24,7 @@ import {
   deleteComment,
   getCommentsByPostId,
 } from "../Controllers/CommentController.js";
+import { getUserById } from "../Controllers/UserController.js";
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.get("/postsId/allItems", getAllPosts); // Để lấy tất cả bài vi�
 router.get("/provinces", (req, res) => {
   res.json(provinces); // Trả về dữ liệu tỉnh thành
 });
+router.get("/profile/:userId", getUserById);
 router.post("/report/:postId", reportPost);
 router.get("/search", search);
 router.get("/posts/detail/:id", getPostbyid); // Để lấy bài viết theo id

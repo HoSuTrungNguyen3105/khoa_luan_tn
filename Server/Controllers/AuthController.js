@@ -6,6 +6,7 @@ import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
 import messageModel from "../Models/messageModel.js";
 import nodemailer from "nodemailer";
+import multer from "multer"; // Sử dụng multer để xử lý file upload
 
 export const dataRoute = async (req, res) => {
   const { role } = req.query;
@@ -26,11 +27,11 @@ export const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "Tài khoản đã tồn tại" });
     }
-    // Validate email format (you can use a regular expression for this)
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Email không đúng định dạng" });
-    }
+    // // Validate email format (you can use a regular expression for this)
+    // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    // if (!emailRegex.test(email)) {
+    //   return res.status(400).json({ message: "Email không đúng định dạng" });
+    // }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -333,6 +334,7 @@ export const sendEmails = async (req, res) => {
     res.status(500).json({ error: "Lỗi khi gửi email" });
   }
 };
+
 export const logoutUser = async (req, res) => {
   try {
     res.cookie("jwt", "", {

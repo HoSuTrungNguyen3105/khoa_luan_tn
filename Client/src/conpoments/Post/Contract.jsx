@@ -17,9 +17,8 @@ const Contract = () => {
   const [loserId, setLoserId] = useState(null);
   const [finder, setFinder] = useState({ image: [] });
   const hasContract = contracts.some(
-    (contract) => contract.postId === post._id
+    (contract) => contract.postId.toString() === id
   );
-
   useEffect(() => {
     fetchContracts();
   }, []);

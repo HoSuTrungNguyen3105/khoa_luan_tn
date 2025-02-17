@@ -67,7 +67,7 @@ function Auth() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log(formData);
     try {
       const result = await signup(formData); // Gọi signup với formData
       if (result) {

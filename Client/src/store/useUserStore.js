@@ -12,6 +12,30 @@ export const useUserStore = create((set, get) => ({
   contracts: [], // Danh sách hợp đồng
   setLoggedInUserId: (userId) => set({ loggedInUserId: userId }),
   following: {}, // Key-Value pair: userId -> follow status (true/false)
+  userData: null, // User profile data
+  loading: true, // Loading state
+  products: [], // User products
+  productsLoading: true, // Products loading state
+  productsError: null, // Error for products
+  setUserData: (data) => set({ userData: data }),
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
+  setProducts: (products) => set({ products }),
+  setProductsLoading: (loading) => set({ productsLoading: loading }),
+  setProductsError: (error) => set({ productsError: error }),
+
+  // Fetch user data
+  fetchUserData: async (userId) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.get(`/user/profile/user/${userId}`);
+      set({ userData: response.data });
+    } catch (error) {
+      set({ error: "Không thể tải thông tin người dùng." });
+    } finally {
+      set({ loading: false });
+    }
+  },
 
   // API: Follow a user
   followUser: async (currentUserId, userId) => {
@@ -46,6 +70,17 @@ export const useUserStore = create((set, get) => ({
       console.log("Unfollow success:", res.data);
     } catch (error) {
       console.error("Unfollow failed:", error);
+    }
+  },
+  fetchUserProducts: async (userId) => {
+    set({ productsLoading: true, productsError: null });
+    try {
+      const response = await axiosInstance.get(`/post/posts/user/${userId}`);
+      set({ products: response.data });
+    } catch (error) {
+      set({ productsError: "Không thể tải sản phẩm của người dùng." });
+    } finally {
+      set({ productsLoading: false });
     }
   },
   // Lấy thông tin hồ sơ người dùng

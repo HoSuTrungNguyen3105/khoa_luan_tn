@@ -2,7 +2,28 @@ import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
 import cloudinary from "../lib/cloudinary.js";
 import { bannedWords } from "../middleware/auth_middleware.js";
+// CẬP NHẬT DANH HIỆU DỰA TRÊN SỐ LƯỢNG BÀI ĐĂNG
+const updateUserBadges = async (userId) => {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) return;
 
+    const postCount = await PostModel.countDocuments({ userId });
+
+    // Thêm hoặc xóa danh hiệu "Tương tác nhiều"
+    if (postCount >= 5) {
+      if (!user.badges.includes("Tương tác nhiều")) {
+        user.badges.push("Tương tác nhiều");
+      }
+    } else {
+      user.badges = user.badges.filter((badge) => badge !== "Tương tác nhiều");
+    }
+
+    await user.save();
+  } catch (error) {
+    console.error("Lỗi cập nhật danh hiệu:", error);
+  }
+};
 export const createPost = async (req, res) => {
   try {
     const { image, userId, desc, contact, location, isLost, isFound } =
@@ -64,6 +85,8 @@ export const createPost = async (req, res) => {
     });
 
     await newPost.save();
+    await updateUserBadges(userId);
+
     res.status(200).json(newPost);
   } catch (error) {
     console.error("Lỗi tạo bài viết:", error);
@@ -105,7 +128,7 @@ export const getPost = async (req, res) => {
 export const getPostToProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const posts = await PostModel.find({ userId }); // Cần đảm bảo userId được lưu đúng
+    const posts = await PostModel.find({ userId, isApproved: false }); // Cần đảm bảo userId được lưu đúng
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json(err);
@@ -408,6 +431,7 @@ export const getPostbyidNoId = async (req, res) => {
     res.status(500).json({ message: "Error" });
   }
 };
+
 export const getPostbyid = async (req, res) => {
   try {
     const { id } = req.params;
@@ -416,6 +440,7 @@ export const getPostbyid = async (req, res) => {
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
+    post.views += 1;
 
     return res.json({
       status: "Success",

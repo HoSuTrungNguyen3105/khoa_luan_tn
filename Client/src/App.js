@@ -30,6 +30,7 @@ import Setting from "./conpoments/Admin/Setting.jsx";
 import SendEmail from "./conpoments/Admin/SendEmail.jsx";
 import Contract from "./conpoments/Post/Contract.jsx";
 import AdminList from "./conpoments/Admin/AdminList.jsx";
+import UProfile from "./pages/Profile/UProfile.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -99,6 +100,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ChangePassword />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/user/profile/:userId"
+            element={
+              <ProtectedRoute>
+                <UProfile />
               </ProtectedRoute>
             }
           />
