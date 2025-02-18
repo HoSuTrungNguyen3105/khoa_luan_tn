@@ -18,6 +18,10 @@ export const useAuthStore = create((set, get) => ({
   isDeleting: false,
   isCheckingAuth: true,
   onlineUsers: [],
+  badge: [],
+  isLoading: false, // Trạng thái đang tải
+  loading: false, // Trạng thái đang tải
+  error: null,
   socket: null,
   users: [], // Danh sách tất cả người dùng
   user: null, // Thông tin người dùng
@@ -124,7 +128,21 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response.data.message);
     }
   },
+  fetchBadges: async () => {
+    set({ error: null, loading: true }); // Đặt trạng thái loading khi bắt đầu gọi API
+    try {
+      const response = await axiosInstance.get("/auth/badges"); // URL API
+      set({ badge: response.data, loading: false }); // Cập nhật danh sách badge và tắt loading
+    } catch (error) {
+      console.error("Lỗi khi tải badges:", error);
+      set({ error: error.message, loading: false }); // Cập nhật lỗi nếu có
+    }
+  },
 
+  // Hàm lấy tên tỉnh thành theo ID
+  getBadgesNameById: (id) => {
+    return get().badge.find((p) => p.id === id)?.name || "Không có địa điểm";
+  },
   deleteAccount: async () => {
     try {
       set({ isDeleting: true });

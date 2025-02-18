@@ -2,6 +2,7 @@ import PostModel from "../Models/postModel.js";
 import UserModel from "../Models/userModel.js";
 import cloudinary from "../lib/cloudinary.js";
 import { bannedWords } from "../middleware/auth_middleware.js";
+import { updateUserXP } from "./UserController.js";
 // CẬP NHẬT DANH HIỆU DỰA TRÊN SỐ LƯỢNG BÀI ĐĂNG
 const updateUserBadges = async (userId) => {
   try {
@@ -85,7 +86,8 @@ export const createPost = async (req, res) => {
     });
 
     await newPost.save();
-    await updateUserBadges(userId);
+    // await updateUserBadges(userId);
+    await updateUserXP(userId, 50); // Cộng 50 XP khi đăng bài mới
 
     res.status(200).json(newPost);
   } catch (error) {
@@ -137,17 +139,11 @@ export const getPostToProfile = async (req, res) => {
 
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { desc, location, contact, image } = req.body; // image là URL ảnh hoặc base64 từ client
+  const { image, desc, contact, location, isLost, isFound } = req.body; // image là URL ảnh hoặc base64 từ client
 
   try {
     // Nếu có hình ảnh mới, upload lên Cloudinary
-    let imageUrl = null;
-    if (image) {
-      const uploadResponse = await cloudinary.uploader.upload(image, {
-        resource_type: "auto", // Tự động nhận dạng loại file
-      });
-      imageUrl = uploadResponse.secure_url; // Lấy URL ảnh từ Cloudinary
-    }
+    const imageUrls = await handleImageUpload(image);
 
     // Cập nhật thông tin bài đăng
     const updatedPost = await PostModel.findByIdAndUpdate(
@@ -156,7 +152,9 @@ export const updatePost = async (req, res) => {
         desc,
         location,
         contact,
-        image: imageUrl || undefined, // Nếu có hình ảnh, cập nhật, nếu không giữ nguyên
+        image: imageUrls, // Lưu mảng các URL ảnh dưới dạng JSON
+        isLost,
+        isFound,
       },
       { new: true } // Trả về tài liệu đã được cập nhật
     );
@@ -192,6 +190,8 @@ export const reportPost = async (req, res) => {
 
     // Thêm báo cáo vào mảng reports
     post.reports.push({ reportedBy: userId });
+    await updateUserXP(userId, 50); // Cộng 50 XP khi đăng bài mới
+
     await post.save();
 
     res.status(200).json({ message: "Bài viết đã được báo cáo thành công." });

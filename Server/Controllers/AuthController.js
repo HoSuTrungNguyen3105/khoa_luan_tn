@@ -20,7 +20,7 @@ export const dataRoute = async (req, res) => {
 };
 
 export const registerUser = async (req, res) => {
-  const { username, password, firstname, lastname, email } = req.body;
+  const { username, password, firstname, lastname, email, badges } = req.body;
 
   try {
     const existingUser = await UserModel.findOne({ email });
@@ -41,6 +41,7 @@ export const registerUser = async (req, res) => {
       .toString("hex")
       .toUpperCase(); // Mã 6 ký tự
     const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // Hết hạn sau 15 phút
+    const badgeId = badgeslist.some((b) => b.id === badges) ? badges : 578;
 
     const newUser = new UserModel({
       username,
@@ -50,6 +51,7 @@ export const registerUser = async (req, res) => {
       lastname,
       verificationCode,
       verificationCodeExpires,
+      badges: badgeId,
     });
 
     await newUser.save();
@@ -66,8 +68,24 @@ export const registerUser = async (req, res) => {
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
-      subject: "Xác thực tài khoản",
-      text: `Mã xác thực của bạn là: ${verificationCode}. Mã này sẽ hết hạn sau 15 phút.`,
+      subject: "🔐 Xác thực tài khoản của bạn",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
+          <div style="max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #333; text-align: center;">🔑 Xác thực tài khoản</h2>
+            <p style="font-size: 16px; color: #555;">Chào bạn,</p>
+            <p style="font-size: 16px; color: #555;">
+              Mã xác thực của bạn là: <strong style="color: #d9534f; font-size: 18px;">${verificationCode}</strong>
+            </p>
+            <p style="font-size: 14px; color: #777;">
+              Mã này có hiệu lực trong <strong>15 phút</strong>. Vui lòng không chia sẻ mã này với bất kỳ ai.
+            </p>
+            <p style="font-size: 12px; color: #999; text-align: center; margin-top: 20px;">
+              Nếu bạn không yêu cầu xác thực, vui lòng bỏ qua email này.
+            </p>
+          </div>
+        </div>
+      `,
     };
 
     await transporter.sendMail(mailOptions);
@@ -79,7 +97,15 @@ export const registerUser = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
+// badges.js
+export const badgeslist = [
+  { id: 646, name: "vip" },
+  { id: 373, name: "normal" },
+  { id: 323, name: "ngôi sao đang lên" },
+  { id: 278, name: "tương tác cao" },
+  { id: 578, name: "newbie" },
+  { id: 696, name: "mất đồ nhiều nhất" },
+];
 export const loginUser = async (req, res) => {
   const { email, password, isAdminLogin } = req.body;
 
@@ -334,7 +360,55 @@ export const sendEmails = async (req, res) => {
     res.status(500).json({ error: "Lỗi khi gửi email" });
   }
 };
-
+// export const updateusser = async (req, res) => {
+//   const { email, contact } = req.body;
+//   const userId = req.user._id;
+//   try {
+//     const user = await UserModel.findOne({ email });
+//     if (!user) {
+//       return res.status(400).json({ error: "User not found" });
+//     }
+//     // Cập nhật thông tin liên lạc của user
+//     user.contact = contact;
+//     await user.save();
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+// export const updatePassword = async (req, res) => {
+//   const { oldPassword, newPassword, confirmPassword } = req.body;
+//   const userId = req.user._id;
+//   try {
+//     const user = await UserModel.findById(userId);
+//     if (!user) {
+//       return res.status(400).json({ error: "User not found" });
+//     }
+//     // Kiểm tra mật khẩu cũ
+//     const isOldPasswordCorrect = await bcrypt.compare(
+//       oldPassword,
+//       user.password
+//     );
+//     if (!isOldPasswordCorrect) {
+//       return res.status(400).json({ error: "Old password is incorrect" });
+//     }
+//     // Kiểm tra mật khẩu mới và xác nhận mật khẩu
+//     if (newPassword !== confirmPassword) {
+//       return res
+//         .status(400)
+//         .json({ error: "New password and confirm password do not match" });
+//     }
+//     // Mã hóa mật khẩu mới
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(newPassword, salt);
+//     // Cập nhật mật khẩu mới
+//     user.password = hashedPassword;
+//     await user.save();
+//     res.status(200).json({ message: "Password updated successfully" });
+//   } catch (error) {
+//     console.error("Error in updatePassword controller:", error.message);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 export const logoutUser = async (req, res) => {
   try {
     res.cookie("jwt", "", {

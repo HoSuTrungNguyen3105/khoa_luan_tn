@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation, useParams, Link } from "react-router-dom";
 import { usePostStore } from "../../store/usePostStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -28,6 +34,8 @@ const PostDetail = () => {
   const { authUser } = useAuthStore();
   const { followUser, unfollowUser, fetchFollowingStatus } = useFollowStore();
   const [user, setUserId] = useState(null);
+  const fileInputRef = useRef();
+
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const fetchedUserId = queryParams.get("userId");
@@ -61,7 +69,7 @@ const PostDetail = () => {
         name: isAdminPage ? "Admin" : "Home",
         path: isAdminPage ? "/admin-dashboard" : "/",
       },
-      { name: "Bài viết", path: "/post" },
+      { name: "Bài viết", path: "/" },
       { name: post?.title || "Post", path: `/post/${id}` },
     ];
   }, [post, id]);
@@ -151,19 +159,23 @@ const PostDetail = () => {
       setIsFollowLoading(false);
     }
   };
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditedPost((prevState) => ({
-          ...prevState,
-          image: reader.result, // Lưu base64 vào state
-        }));
-      };
-      reader.readAsDataURL(file); // Chuyển file sang base64
-    }
-  };
+  const handleImageChange = useCallback((e) => {
+    const files = Array.from(e.target.files);
+    Promise.all(
+      files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      })
+    ).then((image) => {
+      setEditedPost((prev) => ({
+        ...prev,
+        image: [...prev.image, ...image],
+      }));
+    });
+  }, []);
 
   const handleMessage = () => {
     if (!isUserFollowing) {
@@ -184,7 +196,12 @@ const PostDetail = () => {
       }
     }
   };
-
+  const handleRemoveImage = (indexToRemove) => {
+    setEditedPost((prevState) => ({
+      ...prevState,
+      image: prevState.image.filter((_, index) => index !== indexToRemove),
+    }));
+  };
   const handlePrevImage = () => {
     setCurrentImageIndex((prevIndex) =>
       prevIndex > 0 ? prevIndex - 1 : post?.image?.length - 1
@@ -196,6 +213,9 @@ const PostDetail = () => {
       prevIndex < post?.image?.length - 1 ? prevIndex + 1 : 0
     );
   };
+  console.log("authUser ID:", authUser?._id);
+  console.log("Post User ID:", post?.userId);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src =
@@ -270,8 +290,33 @@ const PostDetail = () => {
               </option>
             ))}
           </select>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+            multiple
+          />
+          <div className="mt-4 flex flex-wrap gap-4">
+            {editedPost.image.map((images, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={images}
+                  alt={`selected-${index}`}
+                  className="w-24 h-24 object-cover rounded-lg shadow-md border-2 border-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  Xóa
+                </button>
+              </div>
+            ))}
+          </div>
           <div className="edit-actions">
             <button onClick={handleSave}>Lưu</button>
             <button onClick={handleCancel}>Hủy</button>
@@ -329,7 +374,7 @@ const PostDetail = () => {
       )}
 
       {/* Edit Button */}
-      {authUser && authUser._id === post.userId && !isEditing && (
+      {authUser && authUser._id === post.userId._id && !isEditing && (
         <div className="postReact">
           <button className="button fc-button" onClick={handleEditClick}>
             Sửa
@@ -341,7 +386,7 @@ const PostDetail = () => {
       )}
 
       <div className="postReact">
-        {authUser && authUser._id !== post.userId && (
+        {authUser && authUser._id !== post.userId._id && (
           <>
             <button
               className={`button fc-button ${

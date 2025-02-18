@@ -5,28 +5,45 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { axiosInstance } from "../../lib/axios"; // Giả sử bạn đã có axiosInstance để gọi API
 
 const ProfileCard = () => {
-  const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+  const { authUser, isUpdatingProfile, updateProfile, fetchBadges, badge } =
+    useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
-  const [level, setLevel] = useState(authUser?.level || "Thành viên mới");
-
-  // Cập nhật cấp độ người dùng khi component mount hoặc khi có sự thay đổi về người dùng
-  const updateUserLevel = async () => {
-    try {
-      const response = await axiosInstance.get(
-        `/user/${authUser._id}/update-level`
-      );
-      const newLevel = response.data.level;
-      setLevel(newLevel);
-    } catch (error) {
-      console.error("Lỗi cập nhật cấp độ:", error);
-    }
-  };
+  // const updateUserLevel = async () => {
+  //   try {
+  //     const response = await axiosInstance.get(
+  //       `/user/${authUser._id}/update-level`
+  //     );
+  //     const newLevel = response.data.level;
+  //     setLevel(newLevel);
+  //   } catch (error) {
+  //     console.error("Lỗi cập nhật cấp độ:", error);
+  //   }
+  // };
 
   useEffect(() => {
-    if (authUser?._id) {
-      updateUserLevel();
+    if (!badge || badge.length === 0) {
+      console.log("Fetching badges..." + fetchBadges);
+      fetchBadges();
     }
-  }, [authUser?._id]); // Gọi lại khi userId thay đổi
+  }, [badge, fetchBadges]);
+
+  // useEffect(() => {
+  //   console.log("authUser:", authUser); // Log authUser để kiểm tra dữ liệu
+  //   if (authUser && authUser._id) {
+  //     updateUserLevel();
+  //   }
+  // }, [authUser?._id]);
+
+  const getBadgeNameById = (badges) => {
+    try {
+      const locationId = Number(badges);
+      const badgesList = badge.find((p) => p.id === locationId);
+      return badgesList ? badgesList.name : "Không xác định";
+    } catch (error) {
+      console.error("Lỗi khi lấy tên badge:", error);
+      return "Không xác định";
+    }
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -88,16 +105,13 @@ const ProfileCard = () => {
         </span>
         <p>
           <span className="text-blue-500 font-semibold">
-            Điểm thưởng : {authUser?.points}
+            {/* Điểm thưởng : {authUser?.points} */}
+            <span>XP: {authUser?.xp ?? 0}</span>
+            Cấp độ: {getBadgeNameById(authUser.badges)}
           </span>
         </p>
 
-        <span>{authUser.favoritesCount} Yêu thích</span>
-
-        {/* Hiển thị cấp độ của người dùng */}
-        <p className="mt-2">
-          <span className="text-green-500 font-semibold">Cấp độ: {level}</span>
-        </p>
+        {/* <span>{authUser.favoritesCount} Yêu thích</span> */}
 
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
         {authUser?.role === "admin" && (

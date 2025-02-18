@@ -34,8 +34,8 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    points: { type: Number, default: 0 }, // Điểm thưởng
-    level: { type: Number, default: 0 }, // Cấp độ dưới dạng số
+    xp: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
     badges: [{ type: Number, default: [] }], // Danh hiệu dưới dạng số
     favoritesCount: {
       type: Number,

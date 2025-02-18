@@ -246,6 +246,20 @@ export const rewardPoint = async (req, res) => {
     res.status(500).json({ message: "Lỗi hệ thống" });
   }
 };
+export const updateUserXP = async (userId, earnedXP) => {
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) return;
+
+    user.xp += earnedXP;
+    user.level = Math.floor(Math.sqrt(user.xp / 100)); // Cập nhật level mới
+
+    await user.save();
+  } catch (error) {
+    console.error("Lỗi cập nhật XP:", error);
+  }
+};
+
 export const contract = async (req, res) => {
   // try {
   //   const { finderId, loserId, images } = req.body;

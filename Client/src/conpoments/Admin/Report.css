@@ -251,10 +251,12 @@ h5 {
   max-width: 500px;
 }
 
-form {
+/* form {
   display: flex;
   flex-direction: column;
-}
+} */
+  
+
 
 form label {
   margin-bottom: 5px;
@@ -271,4 +273,4 @@ form textarea, form input {
 form textarea {
   height: 100px;
   resize: vertical;
-}
+} 

@@ -15,6 +15,7 @@ import {
   verifyEmail,
   sendEmails,
   emailUser,
+  badgeslist,
 } from "../Controllers/AuthController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
 import authenticateToken from "../lib/auth.js";
@@ -29,6 +30,9 @@ router.post("/logout", logoutUser);
 router.post("/forgot-password", forgetPassword);
 router.post("/reset-password-from-forget/:token", resetPasswordFromForget);
 router.post("/send-email", sendEmails);
+router.get("/badges", (req, res) => {
+  res.json(badgeslist); // Trả về dữ liệu tỉnh thành
+});
 router.get("/get-emails", emailUser);
 router.post("/reset-password/:token", resetPassword);
 router.get("/get-user-info", authenticateToken, authUser);

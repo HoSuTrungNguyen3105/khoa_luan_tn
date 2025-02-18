@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import "./Profile.css";
 import { useUserStore } from "../../store/useUserStore";
+import { useAuthStore } from "../../store/useAuthStore";
 const UProfile = () => {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -15,7 +16,19 @@ const UProfile = () => {
     fetchUserData,
     fetchUserProducts,
   } = useUserStore();
+  const { fetchBadges, badge } = useAuthStore();
 
+  useEffect(() => {
+    if (!badge || badge.length === 0) {
+      fetchBadges();
+    }
+  }, [badge, fetchBadges]);
+
+  const getBadgeNameById = (badges) => {
+    const locationId = Number(badges);
+    const badgesList = badge.find((p) => p.id === locationId);
+    return badgesList ? badgesList.name : "Không xác định";
+  };
   useEffect(() => {
     fetchUserData(userId);
     fetchUserProducts(userId);
@@ -61,12 +74,7 @@ const UProfile = () => {
             </div>
 
             <div className="flex gap-4">
-              <span>
-                Danh hiệu:{" "}
-                {userData?.badges?.length > 0
-                  ? userData.badges.join(", ")
-                  : "Không khả dụng"}
-              </span>
+              <span>Danh hiệu: {getBadgeNameById(userData.badges)}</span>
               <span>
                 Yêu thích: {userData?.favoritesCount || "Không khả dụng"}
               </span>
