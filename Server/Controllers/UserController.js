@@ -132,6 +132,65 @@ export const followUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+export const updateUserLevel = async (req, res) => {
+  try {
+    const userId = req.params.id; // Lấy userId từ request
+    const { newXp } = req.body;
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+
+    // Cập nhật XP
+    user.xp = newXp;
+
+    // Tính toán Level dựa trên XP (500 XP = +1 level)
+    const newLevel = Math.floor(newXp / 500) + 1;
+    user.level = newLevel; // Cập nhật level mới
+
+    // Cập nhật danh hiệu dựa trên XP
+    let updatedBadges = new Set(user.badges || []);
+    if (newXp >= 10000) updatedBadges.add(646); // "vip"
+    if (newXp >= 5000) updatedBadges.add(323); // "ngôi sao đang lên"
+    if (newXp >= 2000) updatedBadges.add(278); // "tương tác cao"
+    if (newXp < 1000) updatedBadges.add(578); // "newbie"
+
+    user.badges = [...updatedBadges]; // Lưu danh hiệu mới
+
+    await user.save(); // 🛠 Lưu thay đổi vào database
+
+    return res.json({
+      message: "Cập nhật level & danh hiệu thành công!",
+      level: user.level,
+      xp: user.xp,
+      badges: user.badges,
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật level:", error);
+    return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+export const getContractsForFinder = async (req, res) => {
+  try {
+    const { userId } = req.params; // Lấy userId của finder từ request
+
+    const contracts = await ContractModel.find({ "finder.userId": userId })
+      .populate("finder.userId", "username email")
+      .populate("loser.userId", "username email")
+      .populate("postId", "desc image");
+
+    if (!contracts || contracts.length === 0) {
+      return res.status(404).json({ message: "Không có hợp đồng nào." });
+    }
+
+    res.json({ status: "success", data: contracts });
+  } catch (error) {
+    console.error("Lỗi lấy hợp đồng cho Finder:", error);
+    res.status(500).json({ message: "Lỗi máy chủ." });
+  }
+};
 export const getNotifications = async (req, res) => {
   try {
     const { userId } = req.params; // userId là ID của người dùng muốn lấy thông báo
@@ -339,57 +398,45 @@ export const addContract = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ, vui lòng thử lại!" });
   }
 };
-const levelMapping = {
-  1: "Thành viên mới",
-  2: "Thành viên đồng",
-  3: "Thành viên bạc",
-  4: "Thành viên vàng",
-  5: "Thành viên kim cương",
-};
 
-// Hàm chuyển đổi level số sang text
-const getLevelText = (level) => {
-  return levelMapping[level] || "Thành viên đặc biệt";
-};
+// export const updateUserLevel = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const user = await UserModel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-export const updateUserLevel = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     // Tính toán level dựa trên năm đăng ký
+//     const currentYear = new Date().getFullYear();
+//     const registrationYear = user.createdAt.getFullYear();
+//     const yearsRegistered = currentYear - registrationYear;
 
-    // Tính toán level dựa trên năm đăng ký
-    const currentYear = new Date().getFullYear();
-    const registrationYear = user.createdAt.getFullYear();
-    const yearsRegistered = currentYear - registrationYear;
+//     // Gán level mới
+//     const newLevel = yearsRegistered > 5 ? 5 : yearsRegistered; // Giới hạn max là 5
 
-    // Gán level mới
-    const newLevel = yearsRegistered > 5 ? 5 : yearsRegistered; // Giới hạn max là 5
+//     // Cập nhật danh hiệu (badges)
+//     let newBadges = [...user.badges];
+//     if (!newBadges.includes(newLevel)) {
+//       newBadges.push(newLevel);
+//     }
 
-    // Cập nhật danh hiệu (badges)
-    let newBadges = [...user.badges];
-    if (!newBadges.includes(newLevel)) {
-      newBadges.push(newLevel);
-    }
+//     if (user.level !== newLevel) {
+//       user.level = newLevel;
+//       user.badges = newBadges;
+//       await user.save();
+//     }
 
-    if (user.level !== newLevel) {
-      user.level = newLevel;
-      user.badges = newBadges;
-      await user.save();
-    }
-
-    return res.status(200).json({
-      level: user.level,
-      levelText: getLevelText(user.level),
-      badges: user.badges.map(getLevelText),
-    });
-  } catch (error) {
-    console.error("Lỗi cập nhật cấp độ:", error);
-    return res.status(500).json({ message: "Lỗi cập nhật cấp độ" });
-  }
-};
+//     return res.status(200).json({
+//       level: user.level,
+//       levelText: getLevelText(user.level),
+//       badges: user.badges.map(getLevelText),
+//     });
+//   } catch (error) {
+//     console.error("Lỗi cập nhật cấp độ:", error);
+//     return res.status(500).json({ message: "Lỗi cập nhật cấp độ" });
+//   }
+// };
 
 export const acceptContract = async (req, res) => {
   try {

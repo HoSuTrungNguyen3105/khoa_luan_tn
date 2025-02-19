@@ -99,13 +99,18 @@ export const registerUser = async (req, res) => {
 };
 // badges.js
 export const badgeslist = [
-  { id: 646, name: "vip" },
-  { id: 373, name: "normal" },
-  { id: 323, name: "ngôi sao đang lên" },
-  { id: 278, name: "tương tác cao" },
-  { id: 578, name: "newbie" },
+  { id: 646, name: "Vip" },
+  { id: 111, name: "Thường dân" },
+  { id: 323, name: "Ngôi sao đang lên" },
+  { id: 278, name: "Tương tác cao" },
+  { id: 578, name: "Thành viên mới" },
   { id: 696, name: "mất đồ nhiều nhất" },
+  { id: 624, name: "Thành viên đồng" },
+  { id: 684, name: "Thành viên bạc" },
+  { id: 612, name: "Thành viên vàng" },
+  { id: 999, name: "Thành viên kim cương" },
 ];
+
 export const loginUser = async (req, res) => {
   const { email, password, isAdminLogin } = req.body;
 
@@ -125,9 +130,21 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Tài khoản chưa đăng ký!" });
     }
 
-    // Kiểm tra trạng thái bị block
+    // Kiểm tra trạng thái bị khóa
     if (user.isBlocked) {
-      return res.status(403).json({ message: "Tài khoản của bạn đã bị khóa" });
+      const now = new Date();
+      if (user.blockExpires && now < user.blockExpires) {
+        const remainingMinutes = Math.ceil((user.blockExpires - now) / 60000);
+        return res.status(403).json({
+          message: `Tài khoản của bạn đã bị khóa. Vui lòng thử lại sau ${remainingMinutes} phút.`,
+        });
+      } else {
+        // Mở khóa tài khoản nếu hết thời gian khóa
+        user.isBlocked = false;
+        user.loginAttempts = 0;
+        user.blockExpires = null;
+        await user.save();
+      }
     }
 
     // Kiểm tra vai trò đăng nhập
@@ -146,12 +163,28 @@ export const loginUser = async (req, res) => {
         });
       }
     }
-
     // Kiểm tra mật khẩu
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
     if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "Sai mật khẩu" });
+      user.loginAttempts += 1;
+
+      // Khóa tài khoản sau 3 lần nhập sai
+      if (user.loginAttempts >= 3) {
+        user.isBlocked = true;
+        user.blockExpires = new Date(Date.now() + 15 * 60 * 1000); // Khóa trong 15 phút
+      }
+
+      await user.save();
+      return res.status(400).json({
+        message: `Sai mật khẩu! Bạn đã nhập sai ${user.loginAttempts} lần.`,
+      });
     }
+
+    // Reset số lần đăng nhập sai nếu thành công
+    user.loginAttempts = 0;
+    user.isBlocked = false;
+    user.blockExpires = null;
+    user.lastLogin = Date.now();
 
     // Tạo token đăng nhập và trả về thông tin người dùng
     generateToken(user._id, res);

@@ -8,6 +8,7 @@ import {
   fetchContract,
   fetchFollowingStatus,
   followUser,
+  getContractsForFinder,
   getNotifications,
   getUserById,
   getUserProfile,
@@ -15,6 +16,7 @@ import {
   searchPost,
   searchUser,
   unfollowUser,
+  updateUserLevel,
 } from "../Controllers/UserController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
 const router = express.Router();
@@ -32,6 +34,9 @@ router.post("/change-password", protectRoute, changePassword);
 router.post("/reward-points", rewardPoint);
 router.get("/contraction", fetchContract);
 router.post("/contraction", addContract);
-router.put("/contraction/:id/status", acceptContract);
-router.get("/:id/update-level");
+router.put("/contracts/:id/status", acceptContract);
+// router.get("/:id/update-level", updateUserLevel);
+router.get("/finder/:userId", getContractsForFinder);
+router.put("/update-level", updateUserLevel);
+
 export default router;

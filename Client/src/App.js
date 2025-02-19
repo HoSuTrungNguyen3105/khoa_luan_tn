@@ -28,9 +28,10 @@ import useCheckUserStatus from "./lib/check.js";
 import ErrorPage from "./ErrorPage.jsx";
 import Setting from "./conpoments/Admin/Setting.jsx";
 import SendEmail from "./conpoments/Admin/SendEmail.jsx";
-import Contract from "./conpoments/Post/Contract.jsx";
 import AdminList from "./conpoments/Admin/AdminList.jsx";
 import UProfile from "./pages/Profile/UProfile.jsx";
+import Contract from "./conpoments/Post/Contract.jsx";
+import ContractFinder from "./conpoments/Contract/ContractFinder.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -108,6 +109,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <UProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contracts/finder/:finderId"
+            element={
+              <ProtectedRoute>
+                <ContractFinder />
               </ProtectedRoute>
             }
           />

@@ -3,29 +3,50 @@ import React, { useState, useEffect } from "react";
 import { Camera } from "lucide-react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { axiosInstance } from "../../lib/axios"; // Giả sử bạn đã có axiosInstance để gọi API
+import { Link } from "react-router-dom";
+import XPProgressBar from "./XPProgressBar";
 
 const ProfileCard = () => {
-  const { authUser, isUpdatingProfile, updateProfile, fetchBadges, badge } =
-    useAuthStore();
+  const {
+    authUser,
+    isUpdatingProfile,
+    updateProfile,
+    fetchBadges,
+    badge,
+    setUser,
+  } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
-  // const updateUserLevel = async () => {
-  //   try {
-  //     const response = await axiosInstance.get(
-  //       `/user/${authUser._id}/update-level`
-  //     );
-  //     const newLevel = response.data.level;
-  //     setLevel(newLevel);
-  //   } catch (error) {
-  //     console.error("Lỗi cập nhật cấp độ:", error);
-  //   }
-  // };
+  const [level, setLevel] = useState(1);
+  // ✅ Tính Level dựa trên XP
+  const calculateLevel = (xp) => Math.floor(xp / 500) + 1;
+
+  // ✅ Hàm cập nhật level lên backend
+  const updateUserLevel = async (newLevel) => {
+    try {
+      await axiosInstance.put(`/user/update-level`, { level: newLevel });
+      setLevel(newLevel);
+      setUser({ ...authUser, level: newLevel }); // Cập nhật state trong store
+    } catch (error) {
+      console.error("Lỗi cập nhật level:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (authUser?.xp !== undefined) {
+      const newLevel = calculateLevel(authUser.xp);
+      if (newLevel > authUser.level) {
+        updateUserLevel(newLevel);
+      }
+      setLevel(newLevel);
+    }
+  }, [authUser?.xp]);
 
   useEffect(() => {
     if (!badge || badge.length === 0) {
-      console.log("Fetching badges..." + fetchBadges);
+      console.log("Badge", authUser);
       fetchBadges();
     }
-  }, [badge, fetchBadges]);
+  }, [badge]);
 
   // useEffect(() => {
   //   console.log("authUser:", authUser); // Log authUser để kiểm tra dữ liệu
@@ -103,16 +124,14 @@ const ProfileCard = () => {
         <span style={{ fontSize: "23px" }}>
           {authUser.firstname} {authUser.lastname}
         </span>
-        <p>
-          <span className="text-blue-500 font-semibold">
-            {/* Điểm thưởng : {authUser?.points} */}
-            <span>XP: {authUser?.xp ?? 0}</span>
-            Cấp độ: {getBadgeNameById(authUser.badges)}
-          </span>
-        </p>
-
+        <p>Cấp độ: {authUser?.badges}</p>
+        <Link to={`/contracts/finder/${authUser._id}`}>Xem hợp đồng</Link>
+        <XPProgressBar
+          xp={authUser?.xp ?? 0}
+          level={authUser?.level ?? 1}
+          badgeName={getBadgeNameById(authUser.badges)}
+        />
         {/* <span>{authUser.favoritesCount} Yêu thích</span> */}
-
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
         {authUser?.role === "admin" && (
           <p className="text-red-900 font-extrabold mt-2">Admin</p>

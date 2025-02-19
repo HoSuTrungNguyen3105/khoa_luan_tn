@@ -1,30 +1,6 @@
-import PostModel from "../Models/postModel.js";
 import Comment from "../Models/commentModel.js";
-import UserModel from "../Models/userModel.js";
-// export const getComment = async (req, res) => {
-//   try {
-//     const comments = await Comment.find({ postId: req.params.postId })
-//       .populate("userId", "username") // Lấy thông tin người bình luận (username)
-//       .populate("postId", "userId") // Lấy thông tin người đăng bài (userId của bài viết)
-//       .exec();
+import { updateUserXP } from "./UserController.js";
 
-//     // Lấy thông tin người đăng bài từ bài viết
-//     const enhancedComments = await Promise.all(
-//       comments.map(async (comment) => {
-//         const postOwner = await User.findById(comment.postId.userId);
-//         return {
-//           ...comment._doc,
-//           commentOwner: comment.userId.username, // Tên người bình luận
-//           postOwner: postOwner ? postOwner.username : "N/A", // Tên người đăng bài
-//         };
-//       })
-//     );
-
-//     res.status(200).json(enhancedComments);
-//   } catch (error) {
-//     res.status(500).json({ message: "Đã xảy ra lỗi khi lấy bình luận", error });
-//   }
-// };
 export const getCommentsByPostId = async (req, res) => {
   try {
     const { postId } = req.params;
@@ -53,6 +29,7 @@ export const addComment = async (req, res) => {
 
     // Populate userId để trả về đầy đủ thông tin người dùng
     const populatedComment = await newComment.populate("userId", "username");
+    await updateUserXP(userId, 50); // Cộng 50 XP khi đăng bài mới
 
     res.status(201).json({ status: "Success", comment: populatedComment });
   } catch (error) {

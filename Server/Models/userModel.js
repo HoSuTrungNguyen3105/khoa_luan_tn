@@ -36,7 +36,8 @@ const userSchema = mongoose.Schema(
     },
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
-    badges: [{ type: Number, default: [] }], // Danh hiệu dưới dạng số
+    badges: { type: [Number], default: [] },
+
     favoritesCount: {
       type: Number,
       default: 0,
