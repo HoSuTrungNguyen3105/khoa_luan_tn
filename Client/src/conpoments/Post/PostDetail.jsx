@@ -213,8 +213,6 @@ const PostDetail = () => {
       prevIndex < post?.image?.length - 1 ? prevIndex + 1 : 0
     );
   };
-  console.log("authUser ID:", authUser?._id);
-  console.log("Post User ID:", post?.userId);
 
   useEffect(() => {
     const script = document.createElement("script");

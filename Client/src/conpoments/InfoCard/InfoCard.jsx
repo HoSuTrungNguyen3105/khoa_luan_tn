@@ -56,7 +56,25 @@ const InfoCard = () => {
           {authUser.firstname} {authUser.lastname}
         </span>
       </div>
-
+      {authUser?.role === "admin" && (
+        <p className="text-red-900 font-extrabold mt-2">Admin</p>
+      )}
+      <div className="FollowStatus">
+        <hr />
+        <div>
+          {/* Cột Followers */}
+          <div className="Follow">
+            <span>{authUser.followers?.length || 0}</span>{" "}
+            <span>Người theo dõi</span>
+          </div>
+          <div className="I"></div>
+          <div className="Follow">
+            <span>{authUser.following?.length || 0}</span>{" "}
+            <span>Đang theo dõi</span>
+          </div>
+        </div>
+        <hr />
+      </div>
       {/* Dropdown menu */}
       {menuOpen && (
         <div className="profile-menu-open">

@@ -28,7 +28,7 @@ const userSchema = mongoose.Schema(
       default: "user",
     },
     contact: {
-      type: Number,
+      type: String,
     },
     profilePic: {
       type: String,
@@ -36,8 +36,17 @@ const userSchema = mongoose.Schema(
     },
     xp: { type: Number, default: 0 },
     level: { type: Number, default: 1 },
-    badges: { type: [Number], default: [] },
-
+    badges: {
+      type: [
+        {
+          id: { type: Number, required: true },
+          name: { type: String, required: true },
+          description: { type: String, default: "" },
+          assignedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
     favoritesCount: {
       type: Number,
       default: 0,

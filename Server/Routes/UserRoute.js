@@ -12,11 +12,13 @@ import {
   getNotifications,
   getUserById,
   getUserProfile,
+  getUserXP,
   rewardPoint,
   searchPost,
   searchUser,
   unfollowUser,
   updateUserLevel,
+  updateUserXP,
 } from "../Controllers/UserController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
 const router = express.Router();
@@ -31,11 +33,11 @@ router.put("/:id/follow", followUser);
 router.put("/:id/unfollow", unfollowUser);
 router.get("/:targetUserId/is-following", fetchFollowingStatus);
 router.post("/change-password", protectRoute, changePassword);
-router.post("/reward-points", rewardPoint);
+router.post("/rewards/:userId", rewardPoint);
 router.get("/contraction", fetchContract);
 router.post("/contraction", addContract);
 router.put("/contracts/:id/status", acceptContract);
-// router.get("/:id/update-level", updateUserLevel);
+router.get("/get-xp/:userId", getUserXP);
 router.get("/finder/:userId", getContractsForFinder);
 router.put("/update-level", updateUserLevel);
 

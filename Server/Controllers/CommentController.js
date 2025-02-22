@@ -29,7 +29,7 @@ export const addComment = async (req, res) => {
 
     // Populate userId để trả về đầy đủ thông tin người dùng
     const populatedComment = await newComment.populate("userId", "username");
-    await updateUserXP(userId, 50); // Cộng 50 XP khi đăng bài mới
+    await updateUserXP(userId, 300); // Cộng 50 XP khi đăng bài mới
 
     res.status(201).json({ status: "Success", comment: populatedComment });
   } catch (error) {

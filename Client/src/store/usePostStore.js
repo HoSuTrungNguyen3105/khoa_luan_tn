@@ -111,9 +111,7 @@ export const usePostStore = create((set, get) => ({
   fetchComments: async (postId) => {
     try {
       const response = await axiosInstance.get(`/post/comments/${postId}`);
-      console.log("Fetched comments from API:", response.data); // Kiểm tra API có trả về dữ liệu đúng không
       set({ comments: response.data.comments }); // Chỉ lưu phần comments
-      console.log("Comments in Zustand store:", get().comments); // Kiểm tra Zustand đã cập nhật chưa
     } catch (error) {
       console.error("Lỗi khi tải bình luận:", error);
     }
@@ -126,13 +124,10 @@ export const usePostStore = create((set, get) => ({
         userId,
         content,
       });
-      console.log("Comment returned from API:", response.data.comment); // Kiểm tra dữ liệu trả về
-
       set((state) => ({
         comments: [response.data.comment, ...state.comments], // Thêm comment mới lên đầu
         loading: false,
       }));
-      console.log("Comments after adding:", response); // Kiểm tra xem comment đã được thêm chưa
       toast.success("Bình luận đã được thêm!");
     } catch (error) {
       console.error("Lỗi khi gửi bình luận:", error);
@@ -191,7 +186,6 @@ export const usePostStore = create((set, get) => ({
     set({ isLoading: true });
     try {
       const response = await axiosInstance.get("/admin/pendingPost"); // Lấy bài chưa duyệt
-      console.log(response.data); // Kiểm tra dữ liệu trả về từ API
       if (response.data) {
         set({ pendingPosts: response.data, isLoading: false });
       } else {

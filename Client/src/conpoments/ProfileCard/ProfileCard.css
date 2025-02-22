@@ -33,43 +33,7 @@
 .ProfileName > span:nth-of-type(1) {
   font-weight: bold;
 }
-/* Follow Status */
-.FollowStatus {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-}
-.FollowStatus > hr {
-  width: 85%;
-  border: 1px solid var(--hrColor);
-}
-.FollowStatus > div {
-  display: flex;
-  gap: 1rem;
-  width: 80%;
-  justify-content: space-around;
-  align-items: center;
-}
-.Follow {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  align-items: center;
-  justify-content: center;
-}
-.Follow > span:nth-of-type(1) {
-  font-weight: bold;
-}
-.Follow > span:nth-of-type(2) {
-  color: var(--gray);
-  font-size: 13px;
-}
-.I {
-  height: 150%;
-  border-left: 2px solid var(--hrColor);
-}
+
 .ProfileCard > span {
   font-weight: bold;
   color: orange;

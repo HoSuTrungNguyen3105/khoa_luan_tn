@@ -134,7 +134,7 @@ export const followUser = async (req, res) => {
 };
 export const updateUserLevel = async (req, res) => {
   try {
-    const userId = req.params.id; // Lấy userId từ request
+    const userId = req.params.id;
     const { newXp } = req.body;
 
     const user = await UserModel.findById(userId);
@@ -142,23 +142,30 @@ export const updateUserLevel = async (req, res) => {
       return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
 
-    // Cập nhật XP
+    // Cập nhật XP và Level
     user.xp = newXp;
-
-    // Tính toán Level dựa trên XP (500 XP = +1 level)
     const newLevel = Math.floor(newXp / 500) + 1;
-    user.level = newLevel; // Cập nhật level mới
+    user.level = newLevel;
 
-    // Cập nhật danh hiệu dựa trên XP
-    let updatedBadges = new Set(user.badges || []);
-    if (newXp >= 10000) updatedBadges.add(646); // "vip"
-    if (newXp >= 5000) updatedBadges.add(323); // "ngôi sao đang lên"
-    if (newXp >= 2000) updatedBadges.add(278); // "tương tác cao"
-    if (newXp < 1000) updatedBadges.add(578); // "newbie"
+    // 🌟 Gán badge theo Level
+    const levelBadgeMap = [
+      { level: 1, badges: 578 }, // Thành viên mới
+      { level: 3, badges: 624 }, // Thành viên đồng
+      { level: 5, badges: 684 }, // Thành viên bạc
+      { level: 7, badges: 612 }, // Thành viên vàng
+      { level: 10, badges: 999 }, // Thành viên kim cương
+    ];
 
-    user.badges = [...updatedBadges]; // Lưu danh hiệu mới
+    // Tìm badge phù hợp nhất
+    const matchingBadge = levelBadgeMap
+      .filter((entry) => newLevel >= entry.level)
+      .pop(); // Lấy badge cao nhất theo level đạt được
 
-    await user.save(); // 🛠 Lưu thay đổi vào database
+    if (matchingBadge) {
+      user.badges = [matchingBadge.badge]; // Cập nhật badge
+    }
+
+    await user.save(); // Lưu vào DB
 
     return res.json({
       message: "Cập nhật level & danh hiệu thành công!",
@@ -169,6 +176,57 @@ export const updateUserLevel = async (req, res) => {
   } catch (error) {
     console.error("Lỗi cập nhật level:", error);
     return res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+export const updateXP = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const xpGained = Math.floor(Math.random() * 500) + 100; // XP ngẫu nhiên từ 100 - 500
+
+    let user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.xp += xpGained;
+
+    // Kiểm tra nếu đủ XP để lên cấp
+    const nextLevelXP = user.level * 500;
+    if (user.xp >= nextLevelXP) {
+      user.level += 1;
+      user.xp = 0; // Reset XP sau khi lên cấp
+    }
+
+    await user.save();
+
+    res.json({
+      status: "Success",
+      xp: user.xp,
+      level: user.level,
+      xpGained,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error updating XP" });
+  }
+};
+export const getUserXP = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      xp: user.xp,
+      level: user.level,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error fetching XP data" });
   }
 };
 
@@ -292,19 +350,41 @@ export const searchPost = async (req, res) => {
   }
 };
 export const rewardPoint = async (req, res) => {
-  const { userId, points } = req.body;
   try {
-    const user = await UserModel.findById(userId);
-    if (!user) return res.status(404).json({ message: "User không tồn tại" });
+    const { userId } = req.params;
+    const xp = Number(req.body.xp);
 
-    user.points += points;
+    // Kiểm tra xem xp có hợp lệ không
+    if (!Number.isFinite(xp) || xp <= 0) {
+      return res.status(400).json({ message: "XP không hợp lệ" });
+    }
+
+    // Tìm người dùng theo ID
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
+    }
+
+    // Đảm bảo user.xp là số hợp lệ trước khi cộng XP
+    user.xp = Number.isFinite(user.xp) ? user.xp + xp : xp;
+
+    // Tính toán level mới dựa trên XP (mỗi 500 XP lên 1 level)
+    user.level = Math.floor(user.xp / 500) + 1;
+
+    // Lưu thông tin cập nhật
     await user.save();
 
-    res.json({ message: "Cộng điểm thành công!", points: user.points });
+    return res.json({
+      message: `Bạn đã nhận được ${xp} XP!`,
+      newXp: user.xp,
+      newLevel: user.level,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi hệ thống" });
+    console.error("Lỗi cập nhật XP:", error);
+    res.status(500).json({ message: "Lỗi server, không thể cập nhật XP." });
   }
 };
+
 export const updateUserXP = async (userId, earnedXP) => {
   try {
     const user = await UserModel.findById(userId);

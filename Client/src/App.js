@@ -32,6 +32,8 @@ import AdminList from "./conpoments/Admin/AdminList.jsx";
 import UProfile from "./pages/Profile/UProfile.jsx";
 import Contract from "./conpoments/Post/Contract.jsx";
 import ContractFinder from "./conpoments/Contract/ContractFinder.jsx";
+import RewardBoard from "./conpoments/Reward/RewardBoard.jsx";
+import RewardSpin from "./conpoments/Reward/RewardSpin.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -117,6 +119,22 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ContractFinder />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reward"
+            element={
+              <ProtectedRoute>
+                <RewardBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/rewardcircle"
+            element={
+              <ProtectedRoute>
+                <RewardSpin />
               </ProtectedRoute>
             }
           />

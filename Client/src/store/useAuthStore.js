@@ -15,6 +15,7 @@ export const useAuthStore = create((set, get) => ({
   setResetPasswordSuccess: (status) => set({ resetPasswordSuccess: status }),
   registerError: null,
   isUpdatingProfile: false,
+  isUpdatingProfileInfo: false,
   isDeleting: false,
   isCheckingAuth: true,
   onlineUsers: [],
@@ -185,11 +186,12 @@ export const useAuthStore = create((set, get) => ({
   },
 
   updateProfileInfo: async (data) => {
-    set((state) => ({
-      authUser: { ...state.authUser, ...data }, // Cập nhật tạm thời
-      isUpdatingProfile: true,
-      errorMessage: "",
-    }));
+    // set((state) => ({
+    //   authUser: { ...state.authUser, ...data }, // Cập nhật tạm thời
+    //   isUpdatingProfile: true,
+    //   errorMessage: "",
+    // }));
+    set({ isUpdatingProfileInfo: true });
 
     try {
       const response = await axiosInstance.put(
@@ -201,7 +203,7 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       set((state) => ({ authUser: { ...state.authUser, ...data } })); // Rollback nếu lỗi
       // Xử lý lỗi
-      set({ isUpdatingProfile: false });
+      set({ isUpdatingProfileInfo: false });
 
       if (error.response) {
         const errorMessage =
@@ -215,7 +217,7 @@ export const useAuthStore = create((set, get) => ({
       }
       return false; // Trả về false nếu có lỗi
     } finally {
-      set({ isUpdatingProfile: false });
+      set({ isUpdatingProfileInfo: false });
     }
   },
 

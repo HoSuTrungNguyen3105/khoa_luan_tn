@@ -104,7 +104,7 @@ export const badgeslist = [
   { id: 323, name: "Ngôi sao đang lên" },
   { id: 278, name: "Tương tác cao" },
   { id: 578, name: "Thành viên mới" },
-  { id: 696, name: "mất đồ nhiều nhất" },
+  { id: 696, name: "Mất đồ nhiều nhất" },
   { id: 624, name: "Thành viên đồng" },
   { id: 684, name: "Thành viên bạc" },
   { id: 612, name: "Thành viên vàng" },
@@ -527,7 +527,11 @@ export const updateProfile = async (req, res) => {
       { new: true }
     );
 
-    res.status(200).json(updatedUser);
+    res.status(200).json({
+      success: true,
+      message: "Cập nhật thông tin thành công",
+      updatedUser,
+    });
   } catch (error) {
     console.log("error in update profile:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -567,9 +571,7 @@ export const updateUserInfo = async (req, res) => {
       { username, firstname, lastname, email, contact },
       {
         new: true,
-        runValidators: true,
-        select: "username firstname lastname email",
-      } // Chỉ trả về các trường cần thiết
+      }
     );
 
     if (!updatedUser) {
@@ -577,6 +579,7 @@ export const updateUserInfo = async (req, res) => {
     }
 
     res.status(200).json({
+      success: true,
       message: "Cập nhật thông tin thành công",
       user: updatedUser,
     });

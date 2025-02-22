@@ -5,7 +5,7 @@ import "./ProfileModal.css";
 
 function ProfileModal({ modalOpened, setModalOpened, userData }) {
   const theme = useMantineTheme();
-  const { updateProfileInfo, isUpdatingProfile } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
+  const { updateProfileInfo, isUpdatingProfileInfo } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
   const [error, setError] = useState(""); // State để lưu lỗi
 
   // State để lưu dữ liệu từ form, bắt đầu từ thông tin người dùng hiện tại
@@ -145,9 +145,9 @@ function ProfileModal({ modalOpened, setModalOpened, userData }) {
         <button
           className="button infoButton"
           type="submit"
-          disabled={isUpdatingProfile}
+          disabled={isUpdatingProfileInfo}
         >
-          {isUpdatingProfile ? "Đang cập nhật..." : "Cập nhật"}
+          {isUpdatingProfileInfo ? "Đang cập nhật..." : "Cập nhật"}
         </button>
         {/* Hiển thị lỗi nếu có */}
         {error && <div className="errorMessage">{error}</div>}
