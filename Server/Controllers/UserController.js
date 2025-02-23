@@ -132,6 +132,44 @@ export const followUser = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
+export const updateXP = async (req, res) => {
+  try {
+    const { userId, xpEarned } = req.body; // Lấy ID người dùng và XP nhận được
+
+    if (!userId || typeof xpEarned !== "number") {
+      return res
+        .status(400)
+        .json({ message: "Thiếu userId hoặc xpEarned không hợp lệ" });
+    }
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    user.xp += xpEarned; // Cộng XP mới vào XP hiện tại
+
+    // Xác định XP tối đa cần để lên level tiếp theo
+    let maxXP = user.level * 500;
+    while (user.xp >= maxXP) {
+      user.xp -= maxXP; // Trừ XP đã vượt mức
+      user.level += 1; // Tăng level
+      maxXP = user.level * 500; // Cập nhật XP tối đa mới
+    }
+
+    await user.save();
+
+    return res.json({
+      message: "XP đã được cập nhật!",
+      xp: user.xp,
+      level: user.level,
+    });
+  } catch (error) {
+    console.error("Lỗi khi cập nhật XP:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 export const updateUserLevel = async (req, res) => {
   try {
     const userId = req.params.id;
@@ -179,38 +217,42 @@ export const updateUserLevel = async (req, res) => {
   }
 };
 
-export const updateXP = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const xpGained = Math.floor(Math.random() * 500) + 100; // XP ngẫu nhiên từ 100 - 500
+// export const updateXP = async (req, res) => {
+//   try {
+//     const { userId } = req.params;
+//     const xpGained = Math.floor(Math.random() * 500) + 100; // XP ngẫu nhiên từ 100 - 500
 
-    let user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     let user = await UserModel.findById(userId);
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    user.xp += xpGained;
+//     user.xp += xpGained;
 
-    // Kiểm tra nếu đủ XP để lên cấp
-    const nextLevelXP = user.level * 500;
-    if (user.xp >= nextLevelXP) {
-      user.level += 1;
-      user.xp = 0; // Reset XP sau khi lên cấp
-    }
+//     // Kiểm tra nếu đủ XP để lên cấp
+//     const nextLevelXP = user.level * 500;
+//     if (user.xp >= nextLevelXP) {
+//       user.level += 1;
+//       user.xp = 0; // Reset XP sau khi lên cấp
+//     }
 
-    await user.save();
+//     await user.save();
 
-    res.json({
-      status: "Success",
-      xp: user.xp,
-      level: user.level,
-      xpGained,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Error updating XP" });
-  }
+//     res.json({
+//       status: "Success",
+//       xp: user.xp,
+//       level: user.level,
+//       xpGained,
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "Error updating XP" });
+//   }
+// };
+const calculateXPMax = (level) => {
+  return 500 * level; // Level 1: 500, Level 2: 1000, Level 3: 1500, ...
 };
+
 export const getUserXP = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -223,6 +265,7 @@ export const getUserXP = async (req, res) => {
     res.json({
       xp: user.xp,
       level: user.level,
+      xpMax: calculateXPMax(user.level),
     });
   } catch (error) {
     console.log(error);
@@ -385,17 +428,18 @@ export const rewardPoint = async (req, res) => {
   }
 };
 
-export const updateUserXP = async (userId, earnedXP) => {
+export const updateUserXP = async (userId, xpToAdd) => {
   try {
     const user = await UserModel.findById(userId);
-    if (!user) return;
+    if (!user) {
+      console.error("Không tìm thấy người dùng để cập nhật XP.");
+      return;
+    }
 
-    user.xp += earnedXP;
-    user.level = Math.floor(Math.sqrt(user.xp / 100)); // Cập nhật level mới
-
+    user.xp = (user.xp || 0) + xpToAdd; // Cộng thêm XP vào XP hiện tại
     await user.save();
   } catch (error) {
-    console.error("Lỗi cập nhật XP:", error);
+    console.error("Lỗi khi cập nhật XP:", error);
   }
 };
 

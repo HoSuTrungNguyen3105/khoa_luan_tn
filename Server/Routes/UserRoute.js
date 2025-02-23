@@ -19,6 +19,7 @@ import {
   unfollowUser,
   updateUserLevel,
   updateUserXP,
+  updateXP,
 } from "../Controllers/UserController.js";
 import { protectRoute } from "../middleware/auth_middleware.js";
 const router = express.Router();
@@ -40,5 +41,6 @@ router.put("/contracts/:id/status", acceptContract);
 router.get("/get-xp/:userId", getUserXP);
 router.get("/finder/:userId", getContractsForFinder);
 router.put("/update-level", updateUserLevel);
+router.put("/update-xp", updateXP);
 
 export default router;

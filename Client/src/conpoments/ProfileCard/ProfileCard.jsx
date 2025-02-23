@@ -47,7 +47,7 @@ const ProfileCard = () => {
   const handleClaimReward = async () => {
     try {
       await axiosInstance.post(`/user/rewards/${authUser._id}`);
-      setClaimedRewards((prev) => new Set([...prev, authUser.level]));
+      setUser({ ...authUser, claimedLevel: authUser.level }); // Cập nhật đã nhận thưởng
     } catch (error) {
       console.error("Lỗi khi nhận thưởng:", error);
     }
@@ -96,7 +96,6 @@ const ProfileCard = () => {
         <span className="block text-lg font-semibold">
           {authUser.firstname} {authUser.lastname}
         </span>
-        <p>Cấp độ: {authUser?.level ?? 1}</p>
         {authUser?.level > authUser?.claimedLevel && (
           <button
             onClick={handleClaimReward}
@@ -105,6 +104,7 @@ const ProfileCard = () => {
             Nhận thưởng Level {authUser?.level}
           </button>
         )}
+
         <Link
           to={`/contracts/finder/${authUser._id}`}
           className="block text-blue-500 hover:underline"

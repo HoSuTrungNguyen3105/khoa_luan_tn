@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { axiosInstance } from "../../lib/axios"; // Giả sử bạn đã có axiosInstance để gọi API
+import { axiosInstance } from "../../lib/axios";
 
 const XPProgressBar = ({ userId }) => {
   const [xp, setXP] = useState(0);
@@ -17,14 +17,26 @@ const XPProgressBar = ({ userId }) => {
     };
 
     fetchXP();
-
-    // Tự động cập nhật XP mỗi 10 giây (có thể chỉnh sửa)
-    const interval = setInterval(fetchXP, 10000);
+    const interval = setInterval(fetchXP, 10000); // Cập nhật mỗi 10 giây
     return () => clearInterval(interval);
   }, [userId]);
 
   const MAX_XP = level * 500;
   const progressWidth = Math.min((xp / MAX_XP) * 100, 100);
+
+  // 📌 Thêm hàm cập nhật XP khi user hoàn thành nhiệm vụ
+  const handleAddXP = async (xpEarned) => {
+    try {
+      const res = await axiosInstance.put("/user/update-xp", {
+        userId,
+        xpEarned,
+      });
+      setXP(res.data.xp);
+      setLevel(res.data.level);
+    } catch (error) {
+      console.error("Lỗi khi cập nhật XP:", error);
+    }
+  };
 
   return (
     <div className="w-full max-w-lg p-5 border rounded-lg shadow-md bg-white">
@@ -48,6 +60,14 @@ const XPProgressBar = ({ userId }) => {
       <p className="text-center text-gray-600 text-sm mt-2">
         {xp} / {MAX_XP} XP
       </p>
+
+      {/* Nút test tăng XP */}
+      <button
+        onClick={() => handleAddXP(200)}
+        className="mt-4 px-4 py-2 bg-green-500 text-white font-bold rounded-lg"
+      >
+        +200 XP
+      </button>
     </div>
   );
 };

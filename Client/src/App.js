@@ -34,6 +34,7 @@ import Contract from "./conpoments/Post/Contract.jsx";
 import ContractFinder from "./conpoments/Contract/ContractFinder.jsx";
 import RewardBoard from "./conpoments/Reward/RewardBoard.jsx";
 import RewardSpin from "./conpoments/Reward/RewardSpin.jsx";
+import HomePage from "./pages/home/HomePage.jsx";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -75,6 +76,10 @@ const App = () => {
         <Routes>
           <Route
             path="/"
+            element={authUser ? <HomePage /> : <Navigate to="/sign-in" />}
+          />
+          <Route
+            path="/v1"
             element={authUser ? <Home /> : <Navigate to="/sign-in" />}
           />
           {/* Đăng nhập, chuyển hướng nếu đã đăng nhập */}

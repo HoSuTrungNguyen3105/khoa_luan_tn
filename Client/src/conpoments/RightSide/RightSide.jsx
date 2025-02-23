@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom"; // Thay useHistory thành 
 import { useAuthStore } from "../../store/useAuthStore";
 import NotificationList from "./NotificationList"; // Import component NotificationList
 import HomeModal from "./HomeModal";
+import { PlusCircleIcon } from "lucide-react";
 
 const RightSide = () => {
   const [modalOpened, setModalOpened] = useState(false);
@@ -101,8 +102,8 @@ const RightSide = () => {
           className="button r-button"
           onClick={() => setModalOpened(true)}
         >
-          <MdOutlinePostAdd />
-          Thêm Bài Đăng mới
+          <PlusCircleIcon />
+          Đăng Tin Mới
         </button>
 
         <ShareModal
