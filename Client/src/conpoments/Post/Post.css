@@ -1,82 +1,116 @@
-.fb-share {
-  margin-top: 10px;
-  background-color: #1877f2; /* Màu xanh của Facebook */
+.post-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.post-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Hình ảnh bài đăng */
+.post-image-container {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.post-image-container img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.post-image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Nút xóa bài */
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 0, 0, 0.8);
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
+  padding: 6px 10px;
+  border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-size: 14px;
+  transition: background 0.2s ease-in-out;
 }
 
-.post-container {
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  max-width: 100%; /* Giới hạn độ rộng tối đa bằng với chiều rộng của parent container */
+.delete-btn:hover {
+  background: rgba(255, 0, 0, 1);
 }
 
-.delete-btn {
-  height: 30px;
-  width: 30px;
-  background: red;
-  margin-bottom: 10px;
-  margin-left: 795px;
-}
-
-.fc-button {
-  height: 2rem;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-.btn-danger {
-  height: 2rem;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.Post {
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  background-color: var(--cardColor);
-  border-radius: 1rem;
-  gap: 1rem;
-}
-
-.Post > img {
-  width: 100%;
-  max-height: 20rem;
-  border-radius: 0.5rem;
-  height: auto; /* Chiều cao tự động để giữ tỷ lệ */
-  object-fit: contain; /* Đảm bảo hình ảnh không bị cắt */
-}
-.post-image {
-  width: 100%;
-  max-height: 20rem;
-  border-radius: 0.5rem;
-  height: auto; /* Chiều cao tự động để giữ tỷ lệ */
-  object-fit: contain; /* Đảm bảo hình ảnh không bị cắt */
-}
+/* Khu vực nút tương tác */
 .postReact {
   display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-}
-.share-btn {
-  margin-top: 10px;
-  background-color: #1877f2; /* Màu xanh của Facebook */
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  justify-content: space-around;
+  margin-top: 12px;
 }
 
-.share-btn:hover {
-  background-color: #145db2;
+/* Nút chung */
+.button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Nút nhắn tin */
+.btn-danger {
+  background: #ff4d4f;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #e43d40;
+}
+
+/* Nút theo dõi / bỏ theo dõi */
+.follow {
+  background: #007bff;
+  color: white;
+}
+
+.follow:hover {
+  background: #0056b3;
+}
+
+.unfollow {
+  background: #28a745;
+  color: white;
+}
+
+.unfollow:hover {
+  background: #218838;
+}
+
+/* Chi tiết bài đăng */
+.detail {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.detail span {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.detail a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.detail a:hover {
+  text-decoration: underline;
 }

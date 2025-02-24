@@ -121,7 +121,7 @@ export const followUser = async (req, res) => {
       await notification.save();
 
       return res.status(200).json({
-        message: "Follow successful and notification created",
+        message: "Follow successful!",
         data: notification,
       });
     } else {
@@ -130,6 +130,22 @@ export const followUser = async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({ message: error.message });
+  }
+};
+export const addNotifications = async (req, res) => {
+  try {
+    const { userId, type, content } = req.body;
+    const notification = new NotificationModel({
+      userId,
+      type,
+      content,
+      isRead: false,
+    });
+    await notification.save();
+    res.status(201).json({ message: "Thông báo đã được tạo." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi tạo thông báo." });
   }
 };
 export const updateXP = async (req, res) => {

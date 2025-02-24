@@ -4,7 +4,7 @@ import { useDeletestore } from "../../store/useDeletestore";
 import { FaTrashAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import * as XLSX from "xlsx"; // Import thư viện XLSX
-import HtmlDocx from "html-docx-js/dist/html-docx"; // Import html-docx-js for Word export
+import { downloadWord } from "../../lib/exportWord";
 
 const AdminDash = () => {
   const { posts, fetchPosts, toggleApproval, isLoading, error, setPosts } =
@@ -31,53 +31,7 @@ const AdminDash = () => {
     // Generate Excel file and prompt user to download
     XLSX.writeFile(wb, "posts.xlsx");
   };
-  // Word export function
-  const downloadWord = () => {
-    const postsHtml = `
-  <html>
-    <head><title>Posts</title></head>
-    <body>
-      <h1>Posts List</h1>
-      <table border="1" style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th>#</th> <!-- Column for serial number -->
-            <th>Title</th>
-            <th>Type</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${posts
-            .map(
-              (post, index) => `
-                <tr>
-                  <td>${index + 1}</td> <!-- Serial number (index + 1) -->
-                  <td>${post.desc}</td>
-                  <td>${
-                    post.isLost
-                      ? "Lost"
-                      : post.isFound
-                      ? "Found"
-                      : "Unspecified"
-                  }</td>
-                  <td>${post.isApproved ? "Blocked" : "Active"}</td>
-                </tr>`
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </body>
-  </html>
-`;
 
-    const converted = HtmlDocx.asBlob(postsHtml); // Convert HTML to Word document Blob
-    const url = URL.createObjectURL(converted); // Create a URL for the Blob
-    const link = document.createElement("a"); // Create a link element
-    link.href = url; // Set the link href to the Blob URL
-    link.download = "post.docx"; // Set the file name
-    link.click(); // Trigger the download
-  };
   // Handle bulk delete of selected posts
   const handleBulkDelete = async () => {
     if (selectedPosts.length === 0) {
@@ -215,7 +169,7 @@ const AdminDash = () => {
         </button>
         {/* Export buttons */}
         <button
-          onClick={downloadWord} // Call the function to export posts to Word
+          onClick={() => downloadWord(posts)} // Gọi hàm xuất Word với danh sách bài viết
           className="btn btn-primary bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700"
         >
           Xuất ra Word

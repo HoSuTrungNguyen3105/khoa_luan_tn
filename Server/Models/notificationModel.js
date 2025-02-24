@@ -18,12 +18,8 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["follow", "message"], // Các loại thông báo có thể là 'follow' hoặc 'message'
+      enum: ["follow", "message", "post", "mention", "contract"],
       required: true,
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
     },
     isRead: {
       type: Boolean,

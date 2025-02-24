@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import axios from "axios";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useNotificationStore } from "./useNotificationStore";
 
 export const useFollowStore = create((set) => ({
   following: {},
@@ -53,6 +53,13 @@ export const useFollowStore = create((set) => ({
         following: { ...state.following, [targetUserId]: true },
       }));
       toast.success(res.data.message || "Followed successfully!");
+      useNotificationStore
+        .getState()
+        .addNotification(`Bạn đã theo dõi ${res.data.username}.`, "success");
+      // toast("Bạn sẽ nhận được thông báo từ người này khi họ đăng bài!", {
+      //   duration: 3000,
+      //   icon: "🔔",
+      // });
     } catch (error) {
       console.error("Failed to follow user:", error);
 

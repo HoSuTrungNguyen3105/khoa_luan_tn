@@ -36,7 +36,7 @@ router.get("/:targetUserId/is-following", fetchFollowingStatus);
 router.post("/change-password", protectRoute, changePassword);
 router.post("/rewards/:userId", rewardPoint);
 router.get("/contraction", fetchContract);
-router.post("/contraction", addContract);
+router.post("/contract", addContract);
 router.put("/contracts/:id/status", acceptContract);
 router.get("/get-xp/:userId", getUserXP);
 router.get("/finder/:userId", getContractsForFinder);

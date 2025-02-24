@@ -323,13 +323,20 @@ const PostDetail = () => {
       ) : (
         <div className="post-info">
           <p className="post-description">{post.desc}</p>
-          <div className="relative aspect-square">
+          {/* <div className="relative w-full h-screen"> */}
+          <div className="relative w-full max-w-md mx-auto overflow-hidden rounded-lg aspect-[4/4]">
+            {/* <div className="relative aspect-square"> */}
+            <div
+              className="absolute inset-0 bg-cover bg-center blur-xl scale-125 opacity-40"
+              style={{ backgroundImage: `url(${post.image[0]})` }}
+            ></div>
             <img
               src={
                 post.image[currentImageIndex] ||
                 "https://cdn-icons-png.freepik.com/256/15058/15058095.png?semt=ais_hybrid"
               }
               alt="Product"
+              // className="relative w-full h-full object-contain z-10"
               className="w-full h-full object-contain rounded-lg"
             />
 
@@ -354,6 +361,48 @@ const PostDetail = () => {
               {currentImageIndex + 1} / {post.image.length}
             </div>
           </div>
+          {/* Thumbnails */}
+          <div className="flex gap-2 mt-4">
+            {post?.image?.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-none w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                  currentImageIndex === index
+                    ? "border-primary"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+          {/* <div className="flex gap-2 mt-4">
+            {post &&
+              post.image &&
+              post.image.length > 0 &&
+              post.image.map((img, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`flex-none w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                    currentImageIndex === index
+                      ? "border-primary"
+                      : "border-transparent"
+                  }`}
+                >
+                  <img
+                    src={img}
+                    alt={`Thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+          </div> */}
           <p className="post-contact">
             <button className="contact-button">
               Liên lạc qua số : {post.contact}

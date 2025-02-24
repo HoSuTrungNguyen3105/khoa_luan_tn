@@ -70,11 +70,14 @@ const Contract = () => {
       };
 
       console.log("contractData:", contractData);
-      await axiosInstance.post("/user/contraction", contractData);
+      await axiosInstance.post("/user/contract", contractData);
       alert("Hợp đồng đã được gửi để xác nhận!");
       navigate(-1);
     } catch (error) {
-      console.error("Lỗi khi gửi hợp đồng:", error);
+      console.error(
+        "Lỗi khi gửi hợp đồng:",
+        error.response?.data || error.message
+      );
     }
   };
 
